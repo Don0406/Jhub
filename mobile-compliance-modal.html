@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>J-Hub | Compliance Alert</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background-color: #000; display: flex; justify-content: center; }
+        .mobile-container { width: 100%; max-width: 390px; height: 100vh; background-color: var(--bg-primary); position: relative; overflow: hidden; }
+        .mock-header { background-color: var(--bg-secondary); padding: 24px 20px; border-bottom: 1px solid var(--border-color); }
+        .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.7); z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; }
+        .bottom-sheet { background-color: var(--bg-secondary); border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 32px 24px; box-shadow: 0 -10px 25px rgba(0,0,0,0.5); border-top: 1px solid var(--border-color); animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .warning-icon { width: 48px; height: 48px; background-color: rgba(239, 68, 68, 0.1); color: var(--status-nogo); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; }
+        .issue-card { background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--status-nogo); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <header class="mock-header">
+            <h2 class="heading-lg" style="margin-bottom: 4px;">Sagada Retreat</h2>
+            <p class="body-sm">Oct 12 • Pickup: Trinoma, Quezon City</p>
+        </header>
+
+        <div class="modal-overlay">
+            <div class="bottom-sheet">
+                <div class="warning-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                </div>
+                <h2 class="heading-lg" style="margin-bottom: 8px;">Check-In Blocked</h2>
+                <p class="body-text" style="color: var(--text-muted); margin-bottom: 24px;">Maria Clara cannot be checked in until the following issues are resolved by the operator or joiner.</p>
+                <h3 class="label-text" style="margin-bottom: 8px;">OUTSTANDING ISSUES</h3>
+                
+                <div class="issue-card">
+                    <span class="body-text" style="font-weight: 500;">Missing Digital Waiver</span>
+                    <span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); padding: 4px 8px; border-radius: 4px; font-size: 12px;">Unsigned</span>
+                </div>
+                <div class="issue-card">
+                    <span class="body-text" style="font-weight: 500;">Payment Balance</span>
+                    <span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); padding: 4px 8px; border-radius: 4px; font-size: 12px;">Due: ₱3,500</span>
+                </div>
+
+                <button id="dismiss-modal-btn" class="btn btn-secondary" style="width: 100%; padding: 16px; margin-top: 16px; font-size: 16px;">Dismiss & Return</button>
+            </div>
+        </div>
+    </div>
+<script src="app.js?v=16"></script>
+</body>
+</html>

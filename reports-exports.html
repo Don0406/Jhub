@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | Reports</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .main-content { padding: 40px; overflow-y: auto; background-color: var(--bg-primary); }
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .report-card { background-color: var(--bg-secondary); padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand-logo" style="margin-bottom: 32px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="logo-text">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Operator</span></span>
+        </div>
+        
+            <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                <a href="operator-dashboard.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+                <a href="tour-management.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Tour Management</a>
+                <a href="booking-queue.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Booking Queue</a>
+                <a href="financial-dashboard.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Financial Ledger</a>
+                <a href="vendor-management.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Vendors</a>
+                <a href="user-management.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">User Management (RBAC)</a>
+                <a href="reports-exports.html" class="body-text" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">Reports & Export</a>
+                <a href="notifications.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Notifications <span class="badge" style="background-color: var(--status-nogo); color: white; margin-left: 8px;">2</span></a>
+                <a href="system-settings.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">System Settings</a>
+                
+                <a href="login.html" id="logout-btn" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <h1 class="heading-xl" style="margin-bottom: 32px;">Generate Reports</h1>
+
+            <div class="report-grid">
+                
+                <div class="report-card">
+                    <div>
+                        <h3 class="heading-md" style="margin-bottom: 8px;">Passenger Manifest</h3>
+                        <p class="body-text" style="color: var(--text-muted); margin-bottom: 16px;">Export checked-in passenger lists for compliance and field operations.</p>
+                        <select class="input-field" style="margin-bottom: 16px;"><option>Select Tour...</option><option>Sagada Retreat</option></select>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button id="export-pdf-btn" class="btn btn-secondary" style="flex: 1;">PDF</button>
+                        <button id="manifest-csv-btn" class="btn btn-primary">CSV</button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div>
+                        <h3 class="heading-md" style="margin-bottom: 8px;">Financial Summary (BIR)</h3>
+                        <p class="body-text" style="color: var(--text-muted); margin-bottom: 16px;">Tax-compliant aggregate revenue and commission reports.</p>
+                        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                            <input type="date" class="input-field">
+                            <span class="body-text" style="align-self: center;">to</span>
+                            <input type="date" class="input-field">
+                        </div>
+                    </div>
+                    <button id="export-bir-btn" class="btn btn-primary" style="width: 100%;">Generate Report</button>
+                </div>
+
+                <div class="report-card">
+                    <div>
+                        <h3 class="heading-md" style="margin-bottom: 8px;">Occupancy Efficiency</h3>
+                        <p class="body-text" style="color: var(--text-muted); margin-bottom: 16px;">Analytics on seat fill rates, thresholds, and prescriptive merge success.</p>
+                        <select class="input-field" style="margin-bottom: 16px;"><option>Last 30 Days</option><option>Last Quarter</option></select>
+                    </div>
+                    <button id="export-occ-btn" class="btn btn-primary" style="width: 100%;">Generate Report</button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script src="app.js?v=20"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | 404 Not Found</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .error-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; background-color: var(--bg-primary); text-align: center; padding: 24px;
+        }
+        .error-code { font-size: 120px; font-weight: 700; color: var(--border-color); line-height: 1; margin-bottom: 24px; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 class="error-code">404</h1>
+        <h2 class="heading-xl" style="margin-bottom: 16px;">Page Not Found</h2>
+        <p class="body-text" style="color: var(--text-muted); max-width: 400px; margin-bottom: 32px;">The page you are looking for doesn't exist, or you do not have the required permissions to view it.</p>
+        <button class="btn btn-primary" style="padding: 12px 32px;" onclick="window.history.back()">Go Back</button>
+    </div>
+</body>
+</html>

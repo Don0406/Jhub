@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | Payment</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .payment-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-primary);
+            padding: 40px 20px;
+        }
+        .payment-card {
+            background-color: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+        }
+        .bank-details {
+            background-color: var(--bg-primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            padding: 32px 16px; /* Reduced side padding slightly to give text more room */
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Prevents anything from spilling out */
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .file-upload:hover {
+            border-color: var(--accent-blue);
+        }
+        
+        /* New class to truncate long file names cleanly */
+        .file-name-text {
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis; /* Adds the "..." */
+            width: 100%;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-container">
+        <div class="payment-card">
+            <h1 class="heading-lg" style="margin-bottom: 8px;">Complete Your Booking</h1>
+            <p id="payment-tour-name" class="body-text" style="color: var(--text-muted); margin-bottom: 24px;">Sagada Weekend Retreat</p>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <span class="body-text" style="font-weight: 600;">Total Amount Due</span>
+                <!-- ADD THE ID HERE -->
+                <h2 id="final-amount-due" style="color: var(--accent-blue); font-size: 32px; font-weight: 700; margin: 0;">₱3,500</h2>
+            </div>
+
+            <h3 class="label-text" style="margin-bottom: 8px;">PAYMENT INSTRUCTIONS</h3>
+            <div class="bank-details">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span class="body-sm">GCash Name:</span>
+                    <span class="body-text" style="font-weight: 600;">J-Hub Operations</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="body-sm">GCash Number:</span>
+                    <span class="body-text" style="font-weight: 600;">0917 123 4567</span>
+                </div>
+            </div>
+
+            <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <!-- Wrapper div needs min-width: 0 to allow text truncation inside CSS Grid -->
+                <div style="min-width: 0;">
+                    <h3 class="label-text" style="margin-bottom: 8px;">PROOF OF PAYMENT</h3>
+                    <label class="file-upload" for="pop-upload" id="file-drop-area" style="margin-bottom: 0;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        
+                        <!-- Added file-name-text class here -->
+                        <p class="body-sm file-name-text" id="file-name-display" style="color: var(--accent-blue); font-weight: 500;">Upload Receipt</p>
+                        
+                        <input type="file" id="pop-upload" style="display: none;" accept="image/png, image/jpeg">
+                    </label>
+                </div>
+
+                <!-- Wrapper div needs min-width: 0 to allow text truncation inside CSS Grid -->
+                <div style="min-width: 0;">
+                    <h3 class="label-text" style="margin-bottom: 8px;">GOVERNMENT ID</h3>
+                    <label class="file-upload" for="id-upload" id="id-drop-area" style="margin-bottom: 0;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        
+                        <!-- Added file-name-text class here -->
+                        <p class="body-sm file-name-text" id="id-name-display" style="color: var(--accent-blue); font-weight: 500;">Upload Valid ID</p>
+                        
+                        <input type="file" id="id-upload" style="display: none;" accept="image/png, image/jpeg">
+                    </label>
+                </div>
+            </div>
+            
+            <button id="submit-payment-btn" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px;">
+                Submit Booking
+            </button>
+            <button id="cancel-payment-btn" class="btn btn-secondary" style="width: 100%; padding: 12px; margin-top: 12px; border: none;">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+<script src="app.js?v=18"></script>
+</body>
+</html>

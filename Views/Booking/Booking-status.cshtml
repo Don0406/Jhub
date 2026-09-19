@@ -1,0 +1,205 @@
+@model _UPDATED__FrontEnd_Capstone.Models.Booking
+@{
+    Layout = null;
+    
+    // Automatic threshold calculator para sa operational indicator status bar mula sa database
+    int slotsFilled = ViewBag.DynamicSlotsFilled ?? 0;
+    int totalCapacity = Model.Tour?.TotalCapacity ?? 1;
+    
+    int progressPercent = (int)Math.Round(((double)slotsFilled / totalCapacity) * 100);
+    if (progressPercent > 100) progressPercent = 100;
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | Booking Details</title>
+    <link rel="stylesheet" href="~/styles.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --border-color: #334155;
+            --text-primary: #ffffff;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --status-go: #22c55e;
+            --status-watch: #eab308;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: var(--bg-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+        }
+
+        .nav-top {
+            display: flex;
+            align-items: center;
+            padding: 16px 40px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            padding: 40px;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+        .panel {
+            background-color: var(--bg-secondary);
+            padding: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: var(--bg-primary);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: @(progressPercent >= 75 ? "var(--status-go)" : "var(--status-watch)");
+            width: @(progressPercent)%;
+            transition: width 0.5s ease;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .check-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--status-go);
+            font-weight: bold;
+        }
+        .pending-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(234, 179, 8, 0.1);
+            color: var(--status-watch);
+            font-weight: bold;
+        }
+        .badge {
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .heading-xl { font-size: 32px; font-weight: 700; margin: 0; }
+        .heading-md { font-size: 18px; font-weight: 600; margin: 0; }
+        .body-text { font-size: 15px; margin: 0; }
+        .body-sm { font-size: 13px; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <a href="/Booking/Track" style="color: var(--text-muted); text-decoration: none; margin-right: 24px; font-weight: 500;">← Back to Track</a>
+        <h2 id="status-ref-number" class="heading-md">Booking #@Model.ReferenceNumber</h2>
+    </nav>
+
+    <main class="detail-layout">
+        
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <div>
+                    <h1 id="status-tour-name" class="heading-xl">@(Model.Tour?.TourName ?? Model.Tour?.Destination ?? "Scheduled Tour")</h1>
+                    <p id="status-date" class="body-text" style="color: var(--text-muted); margin-top: 8px;">
+                        📍 Destination: @(Model.Tour?.Destination ?? "TBD") • 📅 Departure: @(Model.Tour?.DepartureDate.ToString("MMM dd, yyyy") ?? "Not Set")
+                    </p>
+                </div>
+                <span id="status-badge" class="badge" style="background-color: @(Model.Status == "Validated" || Model.Status == "Confirmed" ? "rgba(34, 197, 94, 0.2)" : "rgba(234, 179, 8, 0.2)"); color: @(Model.Status == "Validated" || Model.Status == "Confirmed" ? "var(--status-go)" : "var(--status-watch)"); padding: 8px 16px;">
+                    @Model.Status
+                </span>
+            </div>
+
+            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                <h3 class="heading-md" style="margin-bottom: 12px;">Lead Guest Information</h3>
+                <p class="body-text"><strong>Name:</strong> @Model.LeadName (@Model.LeadAge yrs old)</p>
+                <p class="body-text" style="margin-top: 6px;"><strong>Phone:</strong> @Model.LeadPhone • <strong>Category:</strong> @Model.SpecialCategory</p>
+                @if (!string.IsNullOrEmpty(Model.CompanionNames))
+                {
+                    <p class="body-text" style="margin-top: 6px;"><strong>Companions:</strong> @Model.CompanionNames</p>
+                }
+            </div>
+
+            <h3 class="heading-md" style="margin-top: 32px; margin-bottom: 16px;">Payment History</h3>
+            <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span class="body-text">Total Amount</span>
+                    <span id="status-amount" class="body-text" style="font-weight: 700; color: var(--status-go);">₱@Model.TotalAmount.ToString("N2")</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                    <span class="body-sm">Booking Date Registered</span>
+                    <span class="body-sm">@Model.BookingDate.ToString("MMMM dd, yyyy hh:mm tt")</span>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom: 24px;">
+                <h3 class="heading-md" style="margin-bottom: 8px;">Tour Activation Status</h3>
+                <p class="body-sm" style="color: var(--text-muted);">Tour utilization is currently at @progressPercent% capacity.</p>
+               <div class="progress-bar-container">
+    <div class="progress-fill" style="width: @(progressPercent)%"></div>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px;">
+    <span>@slotsFilled / @totalCapacity Slots Filled</span>
+    <span>@(progressPercent >= 75 ? "Core Target Met 🚀" : "Heuristic Target Pending")</span>
+</div>
+            </div>
+
+            <div class="panel">
+                <h3 class="heading-md" style="margin-bottom: 24px;">Compliance Checklist</h3>
+                
+                <div class="checklist-item">
+                    <div class="check-circle">✓</div>
+                    <span class="body-text">Digital Waiver Checked</span>
+                </div>
+                
+                <div class="checklist-item">
+                    @if (Model.Status == "Validated" || Model.Status == "Confirmed")
+                    {
+                        <div class="check-circle">✓</div>
+                        <div>
+                            <span class="body-text">Payment Validation</span>
+                            <p class="body-sm" style="color: var(--status-go);">Verified by Operator</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="pending-circle">!</div>
+                        <div>
+                            <span class="body-text">Payment Validation</span>
+                            <p class="body-sm" style="color: var(--text-muted);">Under review by operator</p>
+                        </div>
+                    }
+                </div>
+
+                
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

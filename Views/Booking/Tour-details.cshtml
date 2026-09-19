@@ -1,0 +1,231 @@
+@using System.Globalization
+@model _UPDATED__FrontEnd_Capstone.Models.Tour
+@{
+    Layout = null;
+    int slotsFilled = (int)ViewBag.DynamicSlotsFilled;
+    int availableSeats = Model.TotalCapacity - slotsFilled;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | @Model.TourName Details</title>
+    <link rel="stylesheet" href="~/styles.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --border-color: #334155;
+            --text-primary: #ffffff;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --status-go: #22c55e;
+            --status-watch: #eab308;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: var(--bg-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+        }
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .hero-image {
+            width: 100%;
+            height: 350px;
+            background-color: #334155;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.6);
+        }
+        .booking-panel {
+            background-color: var(--bg-secondary);
+            padding: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+        }
+        .itinerary-list {
+            margin: 16px 0;
+            padding-left: 20px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .btn {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-disabled {
+            background-color: #475569;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .heading-xl { font-size: 32px; font-weight: 800; margin: 0; }
+        .heading-lg { font-size: 24px; font-weight: 700; margin: 0; }
+        .heading-md { font-size: 18px; font-weight: 600; margin: 0; }
+        .body-text { font-size: 15px; margin: 0; }
+        .body-sm { font-size: 13px; color: var(--text-muted); margin: 0; }
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-top">
+        <div style="display: flex; align-items: center; gap: 24px;">
+            <a href="/Booking/Tour-discovery" style="color: var(--text-muted); text-decoration: none;">← Back to Tours</a>
+            <div class="brand-logo" style="display: flex; align-items: center; gap: 10px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <span class="logo-text" style="font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--accent-blue); vertical-align: middle; margin-left: 4px;">Guest Portal</span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="detail-layout">
+        @if (TempData["BookingError"] != null)
+        {
+            <div class="alert-danger">
+                @TempData["BookingError"]
+            </div>
+        }
+
+        <div class="hero-image" style="background-image: url('@Model.ImageUrl');">
+            @if (string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <h3 class="heading-md">[ No Destination Banner Uploaded ]</h3>
+            }
+        </div>
+
+        <aside class="booking-panel">
+            <h1 id="dynamic-tour-title" class="heading-xl" style="margin-bottom: 8px;">@Model.TourName</h1>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">
+                📍 Destination: <strong style="color: var(--text-primary);">@Model.Destination</strong> |
+                📅 Run: <strong style="color: var(--text-primary);">@Model.DepartureDate.ToString("MMM dd") - @Model.ReturnDate.ToString("MMM dd, yyyy")</strong>
+            </p>
+
+            <p id="dynamic-tour-seats" class="body-text" style="color: @(availableSeats <= 5 ? "var(--status-watch)" : "var(--status-go)"); font-weight: 600; margin-bottom: 24px;">
+                @if (availableSeats <= 0)
+                {
+                    <span>🚫 Full Capacity (Public Slots Closed)</span>
+                }
+                else
+                {
+                    <span>🔥 Only @availableSeats seats remaining out of @Model.TotalCapacity!</span>
+                }
+            </p>
+
+            <h3 class="heading-md">Itinerary Highlights</h3>
+            <ul id="dynamic-tour-itinerary" class="itinerary-list body-text">
+                @if (!string.IsNullOrEmpty(Model.ItineraryHighlights))
+                {
+                    var items = Model.ItineraryHighlights.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var highlight in items)
+                    {
+                        <li>@highlight.Trim()</li>
+                    }
+                }
+                else
+                {
+                    <li>No special destination itinerary highlights listed.</li>
+                }
+            </ul>
+
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 24px 0;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <span class="body-text">Price per slot</span>
+                <span id="dynamic-base-price" class="heading-lg">@Model.BasePrice.ToString("C2")</span>
+            </div>
+
+            <div style="background-color: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 4px; margin-bottom: 24px; display: flex; gap: 12px;">
+                <input type="checkbox" id="waiver-check" style="margin-top: 4px;" onchange="toggleBookingControlState()">
+                <p class="body-sm" style="color: var(--text-muted); line-height: 1.4;">
+                    I have read and agree to the <a href="#" style="color: var(--accent-blue); text-decoration: none;">Digital Waiver, Terms of Service, and Cancellation Policy</a>. I understand this booking is non-refundable within 48 hours of departure.
+                </p>
+            </div>
+
+            @if (availableSeats > 0)
+            {
+                <a href="/Booking/Booking-form?tourId=@Model.Id"
+                   id="confirm-link"
+                   class="btn btn-primary"
+                   style="pointer-events: none; opacity: 0.5;">
+                    Book Now — Total: <span>@Model.BasePrice.ToString("C2")</span>
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-disabled" style="width: 100%;" disabled>Slots Unavailable</button>
+            }
+        </aside>
+    </main>
+
+    <script>
+        const waiverCheckboxElement = document.getElementById('waiver-check');
+        const confirmLinkElement = document.getElementById('confirm-link');
+
+        function toggleBookingControlState() {
+            if (!confirmLinkElement) return;
+
+            const isWaiverAccepted = waiverCheckboxElement.checked;
+
+            if (isWaiverAccepted) {
+                confirmLinkElement.style.pointerEvents = "auto";
+                confirmLinkElement.style.opacity = "1";
+                confirmLinkElement.style.cursor = "pointer";
+            } else {
+                confirmLinkElement.style.pointerEvents = "none";
+                confirmLinkElement.style.opacity = "0.5";
+                confirmLinkElement.style.cursor = "not-allowed";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+@model IEnumerable<_UPDATED__FrontEnd_Capstone.Models.Tour>
+@{
+    Layout = null;
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | Discover Tours</title>
+    <link rel="stylesheet" href="~/styles.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --border-color: #334155;
+            --text-primary: #ffffff;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --status-go: #22c55e;
+            --status-watch: #eab308;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: var(--bg-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+        }
+
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            padding: 24px 40px;
+            background-color: var(--bg-primary);
+            align-items: center;
+        }
+        .tour-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 0 40px 40px 40px;
+        }
+        .tour-card {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+        .tour-card:hover {
+            transform: translateY(-4px);
+        }
+        .tour-image {
+            height: 180px;
+            background-color: #334155;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .seat-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: rgba(15, 23, 42, 0.8);
+            color: var(--status-watch);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+        .tour-content {
+            padding: 20px;
+        }
+        .input-field {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-secondary { background-color: #475569; color: white; }
+        
+        /* 🔥 DINAGDAG NA HIGHLIGHT BUTTON PARA SA TRACKING */
+        .btn-track { 
+            background-color: transparent; 
+            color: #3b82f6; 
+            border: 1px solid #3b82f6;
+            transition: all 0.2s;
+        }
+        .btn-track:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .heading-md { font-size: 18px; font-weight: 600; margin: 0; }
+        .heading-lg { font-size: 22px; font-weight: 700; margin: 0; }
+        .body-sm { font-size: 13px; color: var(--text-muted); margin: 0; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <div class="brand-logo" style="display: flex; align-items: center; gap: 10px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="logo-text" style="font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Guest Portal</span></span>
+        </div>
+        
+        <div style="display: flex; gap: 24px; align-items: center;">
+            <a href="/Booking/Track" class="btn btn-track">🔍 Track Your Booking</a>
+        </div>
+    </nav>
+
+    <div class="filter-bar" style="justify-content: space-between;">
+        <form method="get" action="/Booking/Tour-discovery" style="display: flex; gap: 16px; flex-grow: 1;">
+            <input type="text" name="search" id="search-input" class="input-field" placeholder="Search destinations..." style="max-width: 300px; width: 100%;" value="@Context.Request.Query["search"]">
+            <select class="input-field" id="date-filter" style="max-width: 200px;">
+                <option>All Dates</option>
+                <option>This Weekend</option>
+                <option>Next Month</option>
+            </select>
+            <button type="submit" id="apply-filter-btn" class="btn btn-secondary">Filter</button>
+        </form>
+    </div>
+
+    <main class="tour-grid">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var tour in Model)
+            {
+                var remainingSeats = tour.TotalCapacity - tour.SlotsFilled;
+                
+                <div class="tour-card" data-title="@(tour.TourName?.ToLower() ?? "")">
+                    <div class="tour-image" style="background-image: url('@tour.ImageUrl');">
+                        <div class="seat-badge" style="color: @(remainingSeats <= 5 ? "var(--status-watch)" : "var(--status-go)");">
+                            @(remainingSeats <= 0 ? "Full Capacity" : $"{remainingSeats} seats available")
+                        </div>
+                    </div>
+                    <div class="tour-content">
+                        <h3 class="heading-md" style="margin-bottom: 8px;">@(!string.IsNullOrEmpty(tour.TourName) ? tour.TourName : tour.Destination)</h3>
+                        
+                        <p class="body-sm" style="margin-bottom: 16px;">
+                            📍 @tour.Destination • 📅 @tour.DepartureDate.ToString("MMM dd, yyyy")
+                        </p>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <p class="heading-lg">₱@tour.BasePrice.ToString("N0")</p>
+                            <a href="/Booking/Details?id=@tour.Id" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 80px 0;">
+                <p style="font-size: 16px; margin: 0;">No scheduled tours are currently open for public booking.</p>
+                <p style="font-size: 13px; margin-top: 8px; color: #64748b;">Please check back later or refresh your social link feeds.</p>
+            </div>
+        }
+    </main>
+
+    <script src="~/app.js?v=22"></script>
+</body>
+</html>

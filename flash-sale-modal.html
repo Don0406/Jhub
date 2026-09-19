@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | Threshold Interventions</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100;
+        }
+        .modal-card {
+            background-color: var(--bg-secondary);
+            width: 100%; max-width: 800px;
+            border-radius: 12px; border: 1px solid var(--border-color);
+            padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .intervention-section {
+            background-color: var(--bg-primary);
+            padding: 24px; border-radius: 8px;
+            margin-bottom: 24px; border: 1px solid var(--border-color);
+        }
+        .merge-comparison {
+            display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center;
+            margin-top: 16px;
+        }
+        .tour-box { background-color: var(--bg-secondary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+
+    <div style="height: 100vh; background-color: var(--bg-primary);"></div>
+
+    <div class="modal-overlay">
+        <div class="modal-card">
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+                <div>
+                    <h2 class="heading-xl">Threshold Management</h2>
+                    <p class="body-text" style="color: var(--status-watch); font-weight: 600; margin-top: 4px;">Tour Status: WATCH (64% Filled)</p>
+                </div>
+                <button id="close-modal-btn" class="btn btn-secondary" style="border: none; font-size: 20px;">✕</button>
+            </div>
+
+            <div class="intervention-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 class="heading-md">Action 1: Flash Sale</h3>
+                    <span class="body-sm">4 Seats Remaining to MRP</span>
+                </div>
+                <div style="display: flex; gap: 16px; align-items: flex-end;">
+                    <div style="flex-grow: 1;">
+                        <label class="label-text">Suggested Discount (%)</label>
+                        <input type="number" class="input-field" value="15" style="margin-top: 8px;">
+                    </div>
+                    <button id="launch-flash-sale-btn" class="btn btn-primary">Launch Flash Sale</button>
+                </div>
+            </div>
+
+            <div class="intervention-section">
+                <h3 class="heading-md" style="margin-bottom: 8px;">Action 2: Prescriptive Merge</h3>
+                <p class="body-sm" style="color: var(--text-muted);">System detected a highly compatible tour operating below threshold on the same date.</p>
+                
+                <div class="merge-comparison">
+                    <div class="tour-box">
+                        <p class="label-text" style="color: var(--accent-blue);">CURRENT TOUR</p>
+                        <p class="heading-md" style="margin: 8px 0;">Sagada Retreat</p>
+                        <p class="body-sm">9/14 Seats (Watch)</p>
+                    </div>
+                    
+                    <div style="color: var(--text-muted);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>
+                    </div>
+                    
+                    <div class="tour-box">
+                        <p class="label-text" style="color: var(--accent-blue);">TARGET MERGE</p>
+                        <p class="heading-md" style="margin: 8px 0;">Sagada Express</p>
+                        <p class="body-sm">4/12 Seats (No-Go)</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <p class="body-text">New Combined Threshold: <strong style="color: var(--status-go);">13/14 Seats (GO)</strong></p>
+                    <button id="confirm-merge-btn" class="btn btn-secondary" style="border-color: var(--status-go); color: var(--status-go);">Confirm Merge</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script src="app.js?v=10"></script>
+</body>
+</html>
