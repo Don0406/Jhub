@@ -1,0 +1,383 @@
+/* =========================================
+   J-HUB DESIGN SYSTEM & GLOBAL VARIABLES
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Colors */
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  
+  /* Accents */
+  --accent-blue: #3B82F6;
+  --accent-blue-hover: #2563EB;
+  
+  /* Status Colors */
+  --status-go: #22C55E;
+  --status-watch: #EAB308;
+  --status-nogo: #EF4444;
+  
+  /* Text & Borders */
+  --text-primary: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border-color: #334155;
+
+  /* Fonts */
+  --font-family: 'Inter', sans-serif;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+a:hover, a:focus, a:active {
+    text-decoration: none !important;
+    outline: none; /* This also removes the weird blue box some browsers add when clicking */
+}
+
+/* =========================================
+   BRAND LOGO
+   ========================================= */
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px; /* Useful for sidebars */
+}
+.nav-top .brand-logo {
+    margin-bottom: 0; /* Resets margin if used in top nav bars */
+}
+.logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #FFFFFF;
+}
+
+/* =========================================
+   UPGRADED TAB SYSTEM
+   ========================================= */
+.tab-container { 
+    border-bottom: 1px solid var(--border-color); 
+    margin-bottom: 24px; 
+    display: flex; 
+    gap: 16px; 
+}
+.tab-btn { 
+    position: relative;
+    background: none; 
+    border: none; 
+    color: var(--text-muted); 
+    font-size: 16px; 
+    font-weight: 600; 
+    padding: 12px 16px; 
+    cursor: pointer; 
+    transition: color 0.3s ease; 
+}
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--accent-blue); }
+
+/* The Animated Underline */
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; /* Aligns with the container border */
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background-color: var(--accent-blue);
+    transition: width 0.3s ease;
+    border-radius: 3px 3px 0 0;
+}
+.tab-btn.active::after {
+    width: 100%;
+}
+.tab-content { display: none; animation: fadeIn 0.3s ease; }
+.tab-content.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   UX / UI ENHANCEMENTS
+   ========================================= */
+/* Give panels and cards subtle depth */
+.panel, .summary-card, .tour-card, .data-table, .form-panel {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Make Tour Cards pop on hover */
+.tour-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-blue);
+    cursor: pointer;
+}
+
+/* Make inputs feel softer and friendlier */
+.input-field {
+    padding: 12px 16px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+.input-field:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Blue glow on focus */
+}
+
+/* =========================================
+   RESPONSIVE BREAKPOINTS (MOBILE & TABLET)
+   ========================================= */
+
+/* Tablet & Smaller Laptops */
+@media (max-width: 1024px) {
+    .dashboard-layout {
+        grid-template-columns: 200px 1fr; /* Shrink sidebar */
+    }
+    .summary-grid, .form-grid, .report-grid {
+        grid-template-columns: 1fr 1fr; /* 2 columns instead of 3 */
+    }
+}
+
+/* Mobile & Small Screens */
+@media (max-width: 768px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr; /* Remove sidebar from grid */
+    }
+    .sidebar {
+        display: none; /* Hides sidebar on mobile for the prototype */
+    }
+    .main-content {
+        padding: 20px;
+    }
+    .summary-grid, .form-grid, .tour-grid, .report-grid, .detail-layout {
+        grid-template-columns: 1fr; /* Stack everything vertically */
+    }
+    .hero-title {
+        font-size: 40px; /* Smaller hero text */
+    }
+    .nav-top, .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 20px;
+    }
+    .filter-bar .input-field, .filter-bar .btn {
+        max-width: 100% !important; /* Full width inputs on mobile */
+        width: 100%;
+    }
+}
+
+/* Better table hover states */
+.data-table tr {
+    transition: background-color 0.2s ease;
+}
+
+/* =========================================
+   RESETS & BASE STYLES
+   ========================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* =========================================
+   TYPOGRAPHY
+   ========================================= */
+.heading-xl { font-size: 32px; font-weight: 700; }
+.heading-lg { font-size: 24px; font-weight: 600; }
+.heading-md { font-size: 18px; font-weight: 600; }
+.body-text  { font-size: 14px; font-weight: 400; }
+.body-sm    { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+.label-text { font-size: 12px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* =========================================
+   COMPONENTS
+   ========================================= */
+
+/* Buttons */
+.btn {
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary { background-color: var(--accent-blue); color: #FFFFFF; }
+.btn-primary:hover { background-color: var(--accent-blue-hover); }
+.btn-primary:disabled { background-color: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
+
+.btn-secondary { background-color: transparent; color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+.btn-secondary:hover { background-color: rgba(59, 130, 246, 0.1); }
+
+.btn-danger { background-color: var(--status-nogo); color: #FFFFFF; }
+.btn-danger:hover { background-color: #DC2626; }
+
+/* Inputs */
+.input-field {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: var(--font-family);
+}
+.input-field:focus { border-color: var(--accent-blue); }
+.input-field::placeholder { color: var(--text-muted); }
+
+/* Badges */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+.bg-go { background-color: rgba(34, 197, 94, 0.2); color: var(--status-go); }
+.bg-watch { background-color: rgba(234, 179, 8, 0.2); color: var(--status-watch); }
+.bg-nogo { background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); }
+
+/* =========================================
+   LAYOUT UTILITIES
+   ========================================= */
+
+/* Dashboard Grid (Operator & Agency) */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  background-color: var(--bg-secondary);
+  padding: 24px;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  padding: 32px 40px;
+  overflow-y: auto;
+  background-color: var(--bg-primary);
+  width: 100%;
+}
+
+/* Data Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+.data-table th, .data-table td {
+  text-align: left;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+.data-table th { background-color: rgba(0,0,0,0.2); }
+.data-table tr:hover { background-color: rgba(255, 255, 255, 0.02); }
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/*LANDING PAGE & HERO STYLES*/
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 64px;
+  background-color: var(--bg-primary);
+}
+
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: calc(100vh - 85px);
+  padding: 0 24px;
+  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+}
+
+.hero-title {
+  font-size: 64px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  background: linear-gradient(90deg, #F8FAFC, var(--accent-blue));
+  -webkit-background-clip: text;
+  background-clip: text; /* Clears the linter warning & ensures cross-browser support */
+  -webkit-text-fill-color: transparent;
+}
+
+/* =========================================
+   TOAST NOTIFICATIONS (JS GENERATED)
+   ========================================= */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 9999;
+}
+.toast {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    border-left: 4px solid var(--accent-blue);
+    font-size: 14px;
+    font-weight: 500;
+    animation: slideInRight 0.3s ease-out forwards;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.toast.success { border-left-color: var(--status-go); }
+.toast.error { border-left-color: var(--status-nogo); }
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeOut {
+    to { opacity: 0; visibility: hidden; }
+}

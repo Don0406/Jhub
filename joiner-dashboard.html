@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | My Bookings</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .main-content {
+            padding: 40px;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table th {
+            background-color: var(--bg-primary);
+        }
+        .data-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+        }
+        .badge { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .bg-pending { background-color: rgba(234, 179, 8, 0.2); color: var(--status-watch); }
+        .bg-validated { background-color: rgba(34, 197, 94, 0.2); color: var(--status-go); }
+        .bg-cancelled { background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <div class="brand-logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="logo-text">J-Hub</span>
+        </div>
+        <div style="display: flex; gap: 24px; align-items: center;">
+            <a href="tour-discovery.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Browse Tours</a>
+            <div id="notification-bell" style="position: relative; cursor: pointer;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <div style="position: absolute; top: 0; right: 2px; width: 8px; height: 8px; background-color: var(--status-nogo); border-radius: 50%;"></div>
+            </div>
+            <div style="width: 32px; height: 32px; background-color: var(--border-color); border-radius: 50%;"></div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h1 class="heading-xl">My Bookings</h1>
+        </div>
+
+        <table class="data-table" id="joiner-bookings-table">
+            <thead>
+                <tr>
+                    <th class="label-text">TOUR NAME</th>
+                    <th class="label-text">DATE</th>
+                    <th class="label-text">AMOUNT</th>
+                    <th class="label-text">STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="heading-md">Sagada Weekend Retreat</td>
+                    <td class="body-text">Oct 12 - 14, 2026</td>
+                    <td class="body-text">₱3,500</td>
+                    <td><span class="badge bg-pending">Pending Validation</span></td>
+                </tr>
+                <tr>
+                    <td class="heading-md">Mt. Pulag Sea of Clouds</td>
+                    <td class="body-text">Sep 05 - 06, 2026</td>
+                    <td class="body-text">₱2,800</td>
+                    <td><span class="badge bg-validated">Validated</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+<script src="app.js?v=11"></script>
+</body>
+</html>

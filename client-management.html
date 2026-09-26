@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | Client Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color); }
+        .main-content { padding: 32px; overflow-y: auto; background-color: var(--bg-primary); }
+        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        .data-table th, .data-table td { text-align: left; padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: rgba(0,0,0,0.2); }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .bg-paid { background-color: rgba(34, 197, 94, 0.2); color: var(--status-go); }
+        .bg-pending { background-color: rgba(234, 179, 8, 0.2); color: var(--status-watch); }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar" style="display: flex; flex-direction: column;">
+            <div class="brand-logo" style="margin-bottom: 32px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <span class="logo-text">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Agency</span></span>
+            </div>
+        
+            <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                <a href="agency-dashboard.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+                <a href="agency-catalog.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Tour Catalog</a>
+                <a href="client-management.html" class="body-text" style="color: var(--text-primary); font-weight: 600;">Clients</a>
+                <a href="commission-tracker.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Commissions</a>
+                
+                <!-- Consistent Logout Button pinned to bottom left -->
+                <a href="login.html" id="logout-btn" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h1 class="heading-xl">Client Management</h1>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="label-text">CLIENT NAME</th>
+                        <th class="label-text">TOUR BOOKED</th>
+                        <th class="label-text">PAYMENT STATUS</th>
+                        <th class="label-text">COMMISSION ATTRIBUTED</th>
+                        <th class="label-text">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="heading-md">Jose Rizal</td>
+                        <td class="body-text">Sagada Weekend Retreat</td>
+                        <td><span class="badge bg-paid">Fully Paid</span></td>
+                        <td class="body-text">₱350.00</td>
+                        <td><button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">View Details</button></td>
+                    </tr>
+                    <tr>
+                        <td class="heading-md">Emilio Aguinaldo</td>
+                        <td class="body-text">Siargao Surf Camp</td>
+                        <td><span class="badge bg-pending">Pending PoP</span></td>
+                        <td class="body-text" style="color: var(--text-muted);">₱850.00 (Pending)</td>
+                        <td><button class="btn btn-primary upload-pop-btn" style="padding: 6px 12px; font-size: 12px;">Upload PoP</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+    <!-- ========================================== -->
+    <!-- PROOF OF PAYMENT UPLOAD MODAL -->
+    <!-- ========================================== -->
+    <div id="pop-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background-color: var(--bg-secondary); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; max-width: 400px;">
+            <h2 class="heading-lg" style="margin-bottom: 8px;">Upload Proof of Payment</h2>
+            <p class="body-sm" style="color: var(--text-muted); margin-bottom: 24px;">Uploading for client: <span id="modal-client-name" style="color: var(--text-primary); font-weight: 600;"></span></p>
+            
+            <div style="border: 2px dashed var(--border-color); padding: 32px; text-align: center; border-radius: 8px; margin-bottom: 24px;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" style="margin-bottom: 12px;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p class="body-text" style="margin-bottom: 12px;">Drag and drop or click to browse</p>
+                <input type="file" id="pop-file-input" class="input-field" accept="image/*,.pdf" style="font-size: 12px;">
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="close-modal-btn" class="btn btn-secondary" style="background: transparent; border: 1px solid var(--border-color);">Cancel</button>
+                <button id="submit-pop-btn" class="btn btn-primary">Submit PoP</button>
+            </div>
+        </div>
+    </div>
+
+<script src="app.js"></script>
+</body>
+</html>

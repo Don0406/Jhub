@@ -1,0 +1,161 @@
+@model IEnumerable<_UPDATED__FrontEnd_Capstone.Models.Booking>
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | Booking History Archive</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a; --bg-secondary: #1e293b; --border-color: #334155;
+            --text-primary: #ffffff; --text-muted: #94a3b8; --accent-blue: #3b82f6; --status-nogo: #ef4444; --status-go: #22c55e;
+        }
+        body { margin: 0; padding: 0; box-sizing: border-box; background-color: var(--bg-primary); font-family: system-ui, sans-serif; color: var(--text-primary); }
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .main-content { padding: 32px; overflow-y: auto; background-color: var(--bg-primary); }
+        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden; margin-bottom: 40px; }
+        .data-table th, .data-table td { text-align: left; padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: rgba(0,0,0,0.2); font-size: 12px; letter-spacing: 0.05em; color: var(--text-muted); }
+        .heading-xl { font-size: 28px; font-weight: 700; margin: 0; }
+        .heading-md { font-size: 15px; font-weight: 600; margin: 0; }
+        .body-text { font-size: 14px; line-height: 1.5; margin: 0; }
+        .label-text { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
+        .brand-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+        .logo-text { font-size: 20px; font-weight: 800; color: #ffffff; }
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; display: inline-block; text-decoration: none; text-align: center; }
+        .btn-view { background-color: var(--accent-blue); color: white; }
+        .btn-delete { background-color: var(--status-nogo); color: white; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .badge-validated { background-color: rgba(34, 197, 94, 0.2); color: var(--status-go); }
+        .badge-rejected { background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-card { background: var(--bg-secondary); padding: 24px; border-radius: 12px; width: 500px; max-height: 80vh; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Operator</span></span>
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                <a href="/Home/OperatorDashboard" class="body-text" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+                <a href="/Tour/Management" class="body-text" style="color: var(--text-muted); text-decoration: none;">Tour Management</a>
+                <a href="/User/BookingQueue" class="body-text" style="color: var(--text-muted); text-decoration: none;">Booking Queue</a>
+                <a href="/Tour/VendorManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">Vendors</a>
+                <a href="/User/UserManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">User Management (RBAC)</a>
+                <a href="/Home/Login" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h1 class="heading-xl">Booking History Archive</h1>
+                <div style="display: flex; gap: 10px;">
+                    @if (Model != null && Model.Any())
+                    {
+                        <a href="/Tour/DeleteAllBookings" class="btn btn-delete" onclick="return confirm('Sigurado ka ba na gusto mong tanggalin ang LAHAT ng booking history records na ito?');">Delete All History</a>
+                    }
+                    <a href="/User/BookingQueue" class="btn" style="background-color: #475569; color: white;">← Back to Queue</a>
+                </div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="label-text">NAME</th>
+                        <th class="label-text">TOUR</th>
+                        <th class="label-text">SLOTS</th>
+                        <th class="label-text">REF #</th>
+                        <th class="label-text">STATUS</th>
+                        <th class="label-text">BOOKED DATE</th>
+                        <th class="label-text">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || !Model.Any()) {
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">No validated or rejected booking records found.</td>
+                        </tr>
+                    } else {
+                        @foreach (var b in Model) {
+                            <tr>
+                                <td class="heading-md">@b.LeadName</td>
+                                <td class="body-text">@b.Tour?.TourName</td>
+                                <td class="body-text">@b.Slots</td>
+                                <td class="body-text">@b.ReferenceNumber</td>
+                                <td>
+                                    @if (b.Status == "Validated") {
+                                        <span class="badge badge-validated">Validated</span>
+                                    } else if (b.Status == "Rejected") {
+                                        <span class="badge badge-rejected">Rejected</span>
+                                    } else {
+                                        <span class="badge" style="background-color: #475569; color: white;">@b.Status</span>
+                                    }
+                                </td>
+                                <td class="body-text">@b.BookingDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <button class="btn btn-view" 
+                                        onclick="openDetails('@b.LeadName', '@b.ReferenceNumber', '@b.LeadEmail', '@b.LeadPhone', '@b.LeadAge', '@b.CompanionNames', '@b.TotalAmount', '@b.ProofOfPaymentUrl', '@b.Tour?.TourName')">
+                                        View Details
+                                        </button>
+                                        
+                                        <a href="/Tour/DeleteBooking/@b.Id" class="btn btn-delete" onclick="return confirm('Sigurado ka ba na gusto mong burahin ang booking record na ito?');">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <div id="details-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 id="m-name" class="heading-xl" style="margin-bottom: 16px;"></h2>
+            <p class="body-text"><strong>Tour:</strong> <span id="m-tour" style="color: var(--accent-blue); font-weight: 600;"></span></p>
+            <p class="body-text"><strong>Ref #:</strong> <span id="m-ref"></span></p>
+            <p class="body-text"><strong>Email:</strong> <span id="m-email"></span></p>
+            <p class="body-text"><strong>Phone:</strong> <span id="m-phone"></span></p>
+            <p class="body-text"><strong>Age:</strong> <span id="m-age"></span></p>
+            <p class="body-text"><strong>Companions:</strong> <span id="m-comp"></span></p>
+            <p class="body-text"><strong>Total Amount:</strong> ₱<span id="m-amount"></span></p>
+            <p class="body-text" style="margin-top: 10px;"><strong>Proof:</strong> <a id="m-proof" target="_blank" style="color:var(--accent-blue)"></a></p>
+            <button class="btn" style="background:#475569; color:white; margin-top: 20px; width: 100%;" onclick="document.getElementById('details-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function openDetails(name, ref, email, phone, age, comp, amount, proof, tourName) {
+            document.getElementById('m-name').innerText = name;
+            document.getElementById('m-tour').innerText = tourName || "N/A";
+            document.getElementById('m-ref').innerText = ref;
+            document.getElementById('m-email').innerText = email;
+            document.getElementById('m-phone').innerText = phone;
+            document.getElementById('m-age').innerText = age;
+            document.getElementById('m-comp').innerText = comp || "None";
+            
+            let numAmount = parseFloat(amount.toString().replace(/,/g, ''));
+            if (amount.toString().includes("0000")) {
+                numAmount = numAmount / 100;
+            }
+
+            document.getElementById('m-amount').innerText = numAmount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            var p = document.getElementById('m-proof');
+            if(proof && proof !== "") { p.href = proof; p.innerText = "View Payment"; }
+            else { p.removeAttribute("href"); p.innerText = "No proof found"; }
+            
+            document.getElementById('details-modal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

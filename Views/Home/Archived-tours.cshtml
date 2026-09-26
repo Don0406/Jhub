@@ -1,0 +1,287 @@
+@model IEnumerable<_UPDATED__FrontEnd_Capstone.Models.Tour>
+@using System.Text.Encodings.Web
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J-Hub | Archived Tours</title>
+    <style>
+        :root { --bg-primary: #0f172a; --bg-secondary: #1e293b; --border-color: #334155; --text-primary: #ffffff; --text-muted: #94a3b8; --accent-blue: #3b82f6; --status-go: #22c55e; --status-nogo: #ef4444; }
+        body { margin: 0; padding: 0; box-sizing: border-box; background-color: var(--bg-primary); font-family: system-ui, sans-serif; color: var(--text-primary); }
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .main-content { padding: 32px; overflow-y: auto; }
+        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        .data-table th, .data-table td { text-align: left; padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: rgba(0,0,0,0.2); font-size: 12px; letter-spacing: 0.05em; color: var(--text-muted); }
+        .heading-xl { font-size: 28px; font-weight: 700; margin: 0; }
+        .heading-md { font-size: 15px; font-weight: 600; margin: 0; }
+        .heading-lg { font-size: 24px; font-weight: 700; margin: 0; }
+        .body-text { font-size: 14px; line-height: 1.5; margin: 0; }
+        .label-text { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
+        .btn-secondary { background-color: #475569; color: white; }
+        .btn-info { background-color: #0284c7; color: white; }
+        .btn-success { background-color: #22c55e; color: white; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .bg-archived { background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-card { background-color: var(--bg-secondary); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; max-width: 550px; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .details-group { background-color: var(--bg-primary); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); }
+        .details-val { font-size: 14px; font-weight: 500; margin-top: 4px; color: var(--text-primary); }
+        .vendor-badge { font-size: 10px; background-color: #2563eb; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        .vendor-subcard { border-left: 3px solid #3b82f6; padding-left: 10px; margin-top: 10px; }
+        .booking-subcard { border-left: 3px solid #22c55e; padding-left: 10px; margin-top: 10px; background-color: rgba(0,0,0,0.1); padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div style="margin-bottom: 32px; font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">Operator</span></div>
+            <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                <a href="/Home/OperatorDashboard" class="body-text" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+                <a href="/Tour/Management" class="body-text" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">Tour Management</a>
+                <a href="/User/BookingQueue" class="body-text" style="color: var(--text-muted); text-decoration: none;">Booking Queue</a>
+                <a href="/Tour/VendorManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">Vendors</a>
+                <a href="/User/UserManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">User Management (RBAC)</a>
+                <a href="/Home/Logout" onclick="sessionStorage.clear(); localStorage.clear();" class="body-text" style="color: var(--status-nogo); text-decoration: none; margin-top: auto;">Log Out</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h1 class="heading-xl">Archived Tours</h1>
+                <a href="/Tour/Management" class="btn btn-secondary">← Back to Tour Management</a>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="label-text">TOUR NAME</th>
+                        <th class="label-text">DESTINATION</th>
+                        <th class="label-text">DATES</th>
+                        <th class="label-text">DAYS LEFT UNTIL DELETION FROM ARCHIVE</th>
+                        <th class="label-text">PRICE</th>
+                        <th class="label-text">STATUS</th>
+                        <th class="label-text">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || !Model.Any()) {
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">No archived tours found.</td>
+                        </tr>
+                    } else {
+                        @foreach (var t in Model) {
+                            // Serialize Vendors
+                            var explicitVendorList = new List<object>();
+                            if (t.Vendor != null) {
+                                explicitVendorList.Add(new { name = t.Vendor.VendorName ?? "Unnamed", service = t.Vendor.ServiceType ?? "N/A", contact = t.Vendor.ContactInfo ?? "N/A", terms = t.Vendor.PaymentTerms ?? "N/A" });
+                            }
+                            string serializedVendors = System.Text.Json.JsonSerializer.Serialize(explicitVendorList);
+                            string base64Vendors = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(serializedVendors));
+
+                            // Serialize Bookings
+                            var explicitBookingList = new List<object>();
+                            if (t.Bookings != null) {
+                                foreach (var b in t.Bookings) {
+                                    explicitBookingList.Add(new {
+                                        leadName = b.LeadName ?? "Unknown Lead",
+                                        leadEmail = b.LeadEmail ?? "N/A",
+                                        companionNames = b.CompanionNames ?? "None",
+                                        slots = b.Slots,
+                                        totalAmount = b.TotalAmount.ToString("N2", System.Globalization.CultureInfo.InvariantCulture),
+                                        status = b.Status
+                                    });
+                                }
+                            }
+                            string serializedBookings = System.Text.Json.JsonSerializer.Serialize(explicitBookingList);
+                            string base64Bookings = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(serializedBookings));
+
+                            // Calculate Days Left
+                            var daysLeft = 365;
+                            if (t.ArchivedAt != null)
+                            {
+                                var elapsedDays = (DateTime.Now.Date - t.ArchivedAt.Value.Date).Days;
+                                daysLeft = 365 - elapsedDays;
+                            }
+
+                            <tr>
+                                <td class="heading-md">@t.TourName</td>
+                                <td class="body-text">@t.Destination</td>
+                                <td class="body-text">@t.DepartureDate.ToString("MMM dd") - @t.ReturnDate.ToString("MMM dd")</td>
+                                <td class="body-text">
+                                    @if (daysLeft == 0)
+                                    {
+                                        <span style="color: var(--status-go); font-weight: 600;">Now!</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: var(--accent-blue); font-weight: 600;">@daysLeft days left</span>
+                                    }
+                                </td>
+                                <td class="body-text">₱@t.BasePrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)</td>
+                                <td><span class="badge bg-archived">@t.Status</span></td>
+                                <td>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <button class="btn btn-info" style="padding: 6px 12px; font-size: 12px;" onclick="openDetailsModal(
+                                            '@JavaScriptEncoder.Default.Encode(t.TourName)', 
+                                            '@JavaScriptEncoder.Default.Encode(t.Destination)', 
+                                            '@t.DepartureDate.ToString("MMMM dd, yyyy hh:mm tt")', 
+                                            '@t.ReturnDate.ToString("MMMM dd, yyyy hh:mm tt")', 
+                                            '₱@t.BasePrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
+                                            '₱@t.OperationalCost.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
+                                            '@t.SlotsFilled / @t.TotalCapacity', 
+                                            '@t.MinParticipants', 
+                                            '@t.Deadline.ToString("MMMM dd, yyyy")', 
+                                            '@JavaScriptEncoder.Default.Encode(t.Status)', 
+                                            '@JavaScriptEncoder.Default.Encode(t.ItineraryHighlights ?? "No highlights specified.")', 
+                                            '@base64Vendors',
+                                            '@base64Bookings'
+                                        )">View</button>
+
+                                        <form method="POST" action="/Tour/RestoreTour" style="margin: 0;" onsubmit="return confirm('Are you sure you want to restore this tour back to active management?');">
+                                            <input type="hidden" name="id" value="@t.Id" />
+                                            <button type="submit" class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">Restore</button>
+                                        </form>
+
+                                        <!-- Permanent Delete Form & Button -->
+                                        <form method="POST" action="/Tour/DeleteArchivedTour" style="margin: 0;" onsubmit="return confirm('Are you sure you want to permanently delete this archived tour? This action cannot be undone.');">
+                                            <input type="hidden" name="id" value="@t.Id" />
+                                            <button type="submit" class="btn" style="background-color: var(--status-nogo); color: white; padding: 6px 12px; font-size: 12px;">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <!-- View Modal -->
+    <div id="view-tour-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 650px; max-height: 85vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <h2 class="heading-lg" id="view-title">Tour Details</h2>
+                <span class="badge bg-archived" id="view-status">Status</span>
+            </div>
+            <div class="details-grid">
+                <div class="details-group"><div class="label-text">DESTINATION</div><div id="view-dest" class="details-val"></div></div>
+                <div class="details-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin: 0;">
+                    <div class="details-group"><div class="label-text">BASE PRICE</div><div id="view-price" class="details-val" style="color: var(--status-go); font-weight: 700;"></div></div>
+                    <div class="details-group"><div class="label-text">OPERATIONAL COST</div><div id="view-cost" class="details-val" style="color: var(--status-nogo);"></div></div>
+                </div>
+                <div class="details-group"><div class="label-text">DEPARTURE TIMELINE</div><div id="view-dep" class="details-val"></div></div>
+                <div class="details-group"><div class="label-text">RETURN TIMELINE</div><div id="view-ret" class="details-val"></div></div>
+                <div class="details-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin: 0;">
+                    <div class="details-group"><div class="label-text">SLOTS (FILLED/CAPACITY)</div><div id="view-slots" class="details-val"></div></div>
+                    <div class="details-group"><div class="label-text">MIN PARTICIPANTS</div><div id="view-min" class="details-val"></div></div>
+                </div>
+                <div class="details-group"><div class="label-text">REGISTRATION DEADLINE</div><div id="view-deadline" class="details-val"></div></div>
+            </div>
+            
+            <div class="details-group" style="margin-bottom: 16px;">
+                <div class="label-text">ASSOCIATED OPERATION VENDOR</div>
+                <div id="view-vendors-container" style="margin-top: 4px;"></div>
+            </div>
+
+            <div class="details-group" style="margin-bottom: 16px;">
+                <div class="label-text">BOOKINGS & PARTICIPANTS</div>
+                <div id="view-bookings-container" style="margin-top: 4px;"></div>
+            </div>
+
+            <div class="details-group" style="margin-bottom: 24px;"><div class="label-text">ITINERARY HIGHLIGHTS</div><div id="view-itin-highlights" class="details-val" style="white-space: pre-wrap; line-height: 1.4;"></div></div>
+            
+            <button type="button" onclick="document.getElementById('view-tour-modal').style.display='none'" class="btn btn-secondary" style="width: 100%;">Close Panel</button>
+        </div>
+    </div>
+
+    <script>
+        function openDetailsModal(name, dest, dep, ret, price, cost, slots, minPart, deadline, status, itin, vendorBase64, bookingBase64) {
+            document.getElementById('view-title').innerText = decodeURIComponent(name);
+            document.getElementById('view-dest').innerText = decodeURIComponent(dest);
+            document.getElementById('view-dep').innerText = dep;
+            document.getElementById('view-ret').innerText = ret;
+            document.getElementById('view-price').innerText = price;
+            document.getElementById('view-cost').innerText = cost;
+            document.getElementById('view-slots').innerText = slots;
+            document.getElementById('view-min').innerText = minPart;
+            document.getElementById('view-deadline').innerText = deadline;
+            document.getElementById('view-status').innerText = decodeURIComponent(status);
+            document.getElementById('view-itin-highlights').innerText = decodeURIComponent(itin);
+            
+            // --- Parse Vendors ---
+            const container = document.getElementById('view-vendors-container');
+            container.innerHTML = '';
+            try {
+                const jsonString = decodeURIComponent(atob(vendorBase64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const vendors = JSON.parse(jsonString);
+
+                if (!vendors || vendors.length === 0) {
+                    container.innerHTML = '<div class="body-text" style="color: var(--text-muted); font-style: italic;">No vendor assigned.</div>';
+                } else {
+                    vendors.forEach(v => {
+                        const card = document.createElement('div');
+                        card.className = 'vendor-subcard';
+                        card.innerHTML = `
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px;">
+                                <div><div class="label-text" style="font-size: 10px;">VENDOR NAME</div><div class="heading-md" style="color: var(--text-primary); margin-top: 2px;">${v.name}</div></div>
+                                <div><div class="label-text" style="font-size: 10px;">SERVICE TYPE</div><div class="body-text" style="margin-top: 2px;"><span class="vendor-badge" style="margin-left: 0;">${v.service}</span></div></div>
+                            </div>
+                            <div class="body-text" style="color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border-color); margin-top: 6px; padding-top: 4px;">
+                                <strong>Contact:</strong> ${v.contact} | <strong>Terms:</strong> ${v.terms}
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                }
+            } catch (err) {
+                container.innerHTML = '<div class="body-text" style="color: var(--status-nogo);">Failed to parse vendor data.</div>';
+            }
+
+            // --- Parse Bookings ---
+            const bookingContainer = document.getElementById('view-bookings-container');
+            bookingContainer.innerHTML = '';
+            try {
+                const bJsonString = decodeURIComponent(atob(bookingBase64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const bookings = JSON.parse(bJsonString);
+
+                if (!bookings || bookings.length === 0) {
+                    bookingContainer.innerHTML = '<div class="body-text" style="color: var(--text-muted); font-style: italic;">No bookings found for this tour.</div>';
+                } else {
+                    bookings.forEach(b => {
+                        const bCard = document.createElement('div');
+                        bCard.className = 'booking-subcard';
+                        bCard.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="heading-md" style="color: var(--text-primary);">Lead: ${b.leadName}</div>
+                                <span class="badge" style="background-color: rgba(34, 197, 94, 0.2); color: var(--status-go);">${b.status}</span>
+                            </div>
+                            <div class="body-text" style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                                <strong>Email:</strong> ${b.leadEmail} | <strong>Slots:</strong> ${b.slots} | <strong>Total:</strong> ₱${b.totalAmount}
+                            </div>
+                            <div class="body-text" style="font-size: 13px; color: var(--text-primary); margin-top: 6px; border-top: 1px dashed var(--border-color); padding-top: 4px;">
+                                <strong>Companion Name(s):</strong> ${b.companionNames ? b.companionNames : 'None'}
+                            </div>
+                        `;
+                        bookingContainer.appendChild(bCard);
+                    });
+                }
+            } catch (err) {
+                bookingContainer.innerHTML = '<div class="body-text" style="color: var(--status-nogo);">Failed to parse booking data.</div>';
+            }
+
+            document.getElementById('view-tour-modal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

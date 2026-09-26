@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | Welcome</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 64px;
+            background-color: var(--bg-primary);
+        }
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: calc(100vh - 85px);
+            padding: 0 24px;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+        .hero-title {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(90deg, #F8FAFC, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand-logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="logo-text">J-Hub</span>
+        </div>
+        <div style="display: flex; gap: 16px;">
+            <a href="login.html"><button class="btn btn-secondary">Log In</button></a>
+            <a href="register.html"><button class="btn btn-primary">Sign Up</button></a>
+        </div>
+    </nav>
+
+    <main class="hero-section">
+        <h2 class="hero-title">The Operating System for Shared Travel</h2>
+        <p class="heading-md" style="color: var(--text-muted); max-width: 600px; margin-bottom: 40px; line-height: 1.5;">
+            J-Hub intelligently matches joiners, manages tour operator financials, and equips field staff with real-time digital manifests.
+        </p>
+        <div style="display: flex; gap: 16px;">
+            <a href="tour-discovery.html"><button class="btn btn-primary" style="padding: 16px 32px; font-size: 16px;">Browse Tours</button></a>
+        </div>
+    </main>
+
+<script src="app.js?v=12"></script>
+</body>
+</html>

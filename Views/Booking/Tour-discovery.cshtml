@@ -1,0 +1,354 @@
+@using System.Globalization
+@model IEnumerable<_UPDATED__FrontEnd_Capstone.Models.Tour>
+@{
+    Layout = null;
+    var phCulture = new CultureInfo("en-PH");
+
+    var searchQuery = Context.Request.Query["search"].ToString();
+    var selectedLandscape = Context.Request.Query["landscape"].ToString();
+    var selectedIntensity = Context.Request.Query["intensity"].ToString();
+    var selectedActivity = Context.Request.Query["activity"].ToString();
+
+    // Paghiwalayin ang boosted at regular tours galing sa Model
+    var boostedTours = Model != null ? Model.Where(t => t.IsBoosted).ToList() : new List<_UPDATED__FrontEnd_Capstone.Models.Tour>();
+    var regularTours = Model != null ? Model.Where(t => !t.IsBoosted).ToList() : new List<_UPDATED__FrontEnd_Capstone.Models.Tour>();
+    
+    var hasTours = Model != null && Model.Any();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | Discover Tours</title>
+    <link rel="stylesheet" href="~/styles.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --border-color: #334155;
+            --text-primary: #ffffff;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --status-go: #22c55e;
+            --status-watch: #eab308;
+            --accent-boost: #f59e0b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: var(--bg-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+        }
+
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 24px 40px;
+            background-color: var(--bg-primary);
+            align-items: center;
+        }
+        .tour-section {
+            padding: 0 40px 40px 40px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+        .tour-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .tour-card {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+            position: relative;
+        }
+        .tour-card.boosted {
+            border: 2px solid var(--accent-boost);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+        }
+        .tour-card:hover {
+            transform: translateY(-4px);
+        }
+        .tour-image {
+            height: 180px;
+            background-color: #334155;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .seat-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: rgba(15, 23, 42, 0.8);
+            color: var(--status-watch);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+        .boost-banner {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background-color: var(--accent-boost);
+            color: #0f172a;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .tour-content {
+            padding: 20px;
+        }
+        .input-field {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+        select.input-field option {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 8px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-secondary { background-color: #475569; color: white; }
+        
+        .btn-track { 
+            background-color: transparent; 
+            color: #3b82f6; 
+            border: 1px solid #3b82f6;
+            transition: all 0.2s;
+        }
+        .btn-track:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .heading-md { font-size: 18px; font-weight: 600; margin: 0; }
+        .heading-lg { font-size: 22px; font-weight: 700; margin: 0; }
+        .body-sm { font-size: 13px; color: var(--text-muted); margin: 0; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <div class="brand-logo" style="display: flex; align-items: center; gap: 10px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="logo-text" style="font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Guest Portal</span></span>
+        </div>
+        
+        <div style="display: flex; gap: 24px; align-items: center;">
+            <a href="/Booking/Track" class="btn btn-track">🔍 Track Your Booking</a>
+        </div>
+    </nav>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form id="filter-form" method="get" action="/Booking/Tour-discovery" style="display: flex; flex-wrap: wrap; gap: 12px; width: 100%; align-items: center;">
+            
+            <input type="text" name="search" id="search-input" class="input-field" placeholder="Search destinations, tours, activities (e.g. hiking)..." style="flex: 2; min-width: 250px;" value="@searchQuery">
+
+            <!-- Landscape Type -->
+            <select name="landscape" class="input-field" style="flex: 1; min-width: 170px;" onchange="this.form.submit()">
+                <option value="">All Landscapes</option>
+                <option value="Mountain / Highlands" selected="@(selectedLandscape == "Mountain / Highlands")">Mountain / Highlands</option>
+                <option value="Coastal / Beach" selected="@(selectedLandscape == "Coastal / Beach")">Coastal / Beach</option>
+                <option value="Urban / City" selected="@(selectedLandscape == "Urban / City")">Urban / City</option>
+                <option value="Forest / Jungle" selected="@(selectedLandscape == "Forest / Jungle")">Forest / Jungle</option>
+                <option value="Island" selected="@(selectedLandscape == "Island")">Island</option>
+                <option value="Countryside" selected="@(selectedLandscape == "Countryside")">Countryside</option>
+            </select>
+
+            <!-- Intensity Level -->
+            <select name="intensity" class="input-field" style="flex: 1; min-width: 150px;" onchange="this.form.submit()">
+                <option value="">All Intensities</option>
+                <option value="Low" selected="@(selectedIntensity == "Low")">Low</option>
+                <option value="Moderate" selected="@(selectedIntensity == "Moderate")">Moderate</option>
+                <option value="High" selected="@(selectedIntensity == "High")">High</option>
+                <option value="Extreme" selected="@(selectedIntensity == "Extreme")">Extreme</option>
+            </select>
+
+            <!-- Activities -->
+            <select name="activity" class="input-field" style="flex: 1; min-width: 180px;" onchange="this.form.submit()">
+                <option value="">All Activities</option>
+                <option value="Hiking & Trekking" selected="@(selectedActivity == "Hiking & Trekking")">Hiking & Trekking</option>
+                <option value="Swimming & Island Hopping" selected="@(selectedActivity == "Swimming & Island Hopping")">Swimming & Island Hopping</option>
+                <option value="Sightseeing & Cultural Tour" selected="@(selectedActivity == "Sightseeing & Cultural Tour")">Sightseeing & Cultural Tour</option>
+                <option value="Food Trip & Leisure" selected="@(selectedActivity == "Food Trip & Leisure")">Food Trip & Leisure</option>
+                <option value="Snorkeling & Diving" selected="@(selectedActivity == "Snorkeling & Diving")">Snorkeling & Diving</option>
+            </select>
+
+            <button type="submit" id="apply-filter-btn" class="btn btn-secondary">Filter</button>
+            @if (!string.IsNullOrEmpty(searchQuery) || !string.IsNullOrEmpty(selectedLandscape) || !string.IsNullOrEmpty(selectedIntensity) || !string.IsNullOrEmpty(selectedActivity))
+            {
+                <a href="/Booking/Tour-discovery" class="btn" style="background-color: transparent; color: var(--text-muted); border: 1px solid var(--border-color);">Reset</a>
+            }
+        </form>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main>
+        @if (hasTours)
+        {
+            <!-- SECTION 1: FEATURED / BOOSTED TOURS (SA ITAAS) -->
+            @if (boostedTours.Any())
+            {
+                <div class="tour-section">
+                    <h2 class="section-title">⭐ Featured & Boosted Tours</h2>
+                    <div class="tour-grid">
+                        @foreach (var tour in boostedTours)
+                        {
+                            var remainingSeats = tour.TotalCapacity - tour.SlotsFilled;
+                            
+                            <div class="tour-card boosted">
+                                <div class="tour-image" style="background-image: url('@tour.ImageUrl');">
+                                    <div class="boost-banner">⭐ BOOSTED</div>
+                                    <div class="seat-badge" style="color: @(remainingSeats <= 5 ? "var(--status-watch)" : "var(--status-go)");">
+                                        @(remainingSeats <= 0 ? "Full Capacity" : $"{remainingSeats} seats available")
+                                    </div>
+                                </div>
+                                <div class="tour-content">
+                                    <h3 class="heading-md" style="margin-bottom: 8px;">@(!string.IsNullOrEmpty(tour.TourName) ? tour.TourName : tour.Destination)</h3>
+                                    
+                                    <p class="body-sm" style="margin-bottom: 8px;">
+                                        📍 @tour.Destination • 📅 @tour.DepartureDate.ToString("MMM dd, yyyy")
+                                    </p>
+
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+                                        @if (!string.IsNullOrEmpty(tour.LandscapeType))
+                                        {
+                                            <span style="font-size: 11px; background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); padding: 2px 8px; border-radius: 4px;">⛰️ @tour.LandscapeType</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(tour.IntensityLevel))
+                                        {
+                                            <span style="font-size: 11px; background: rgba(234, 179, 8, 0.1); color: var(--status-watch); padding: 2px 8px; border-radius: 4px;">⚡ @tour.IntensityLevel</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(tour.Activities))
+                                        {
+                                            <span style="font-size: 11px; background: rgba(34, 197, 94, 0.1); color: var(--status-go); padding: 2px 8px; border-radius: 4px;">🎯 @tour.Activities</span>
+                                        }
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <p class="heading-lg">₱@tour.BasePrice.ToString("N0", phCulture)</p>
+                                        <a href="/Booking/Details?id=@tour.Id" class="btn btn-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- SECTION 2: OTHER / REGULAR TOURS (SA BABA) -->
+            @if (regularTours.Any())
+            {
+                <div class="tour-section">
+                    <h2 class="section-title">🗺️ Other Available Tours</h2>
+                    <div class="tour-grid">
+                        @foreach (var tour in regularTours)
+                        {
+                            var remainingSeats = tour.TotalCapacity - tour.SlotsFilled;
+                            
+                            <div class="tour-card">
+                                <div class="tour-image" style="background-image: url('@tour.ImageUrl');">
+                                    <div class="seat-badge" style="color: @(remainingSeats <= 5 ? "var(--status-watch)" : "var(--status-go)");">
+                                        @(remainingSeats <= 0 ? "Full Capacity" : $"{remainingSeats} seats available")
+                                    </div>
+                                </div>
+                                <div class="tour-content">
+                                    <h3 class="heading-md" style="margin-bottom: 8px;">@(!string.IsNullOrEmpty(tour.TourName) ? tour.TourName : tour.Destination)</h3>
+                                    
+                                    <p class="body-sm" style="margin-bottom: 8px;">
+                                        📍 @tour.Destination • 📅 @tour.DepartureDate.ToString("MMM dd, yyyy")
+                                    </p>
+
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+                                        @if (!string.IsNullOrEmpty(tour.LandscapeType))
+                                        {
+                                            <span style="font-size: 11px; background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); padding: 2px 8px; border-radius: 4px;">⛰️ @tour.LandscapeType</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(tour.IntensityLevel))
+                                        {
+                                            <span style="font-size: 11px; background: rgba(234, 179, 8, 0.1); color: var(--status-watch); padding: 2px 8px; border-radius: 4px;">⚡ @tour.IntensityLevel</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(tour.Activities))
+                                        {
+                                            <span style="font-size: 11px; background: rgba(34, 197, 94, 0.1); color: var(--status-go); padding: 2px 8px; border-radius: 4px;">🎯 @tour.Activities</span>
+                                        }
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <p class="heading-lg">₱@tour.BasePrice.ToString("N0", phCulture)</p>
+                                        <a href="/Booking/Details?id=@tour.Id" class="btn btn-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="tour-section" style="text-align: center; color: var(--text-muted); padding: 80px 0;">
+                <p style="font-size: 16px; margin: 0;">No scheduled tours match your search or filter criteria.</p>
+                <p style="font-size: 13px; margin-top: 8px; color: #64748b;">Subukan munang mag-reset ng filters o maghanap gamit ang ibang salita.</p>
+            </div>
+        }
+    </main>
+
+    <script src="~/app.js?v=22"></script>
+</body>
+</html>

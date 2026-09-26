@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | Session Expired</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .auth-container { display: flex; align-items: center; justify-content: center; height: 100vh; background-color: var(--bg-primary); }
+        .auth-card { background-color: var(--bg-secondary); padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid var(--border-color); text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--status-watch)" stroke-width="2" style="margin-bottom: 16px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <h1 class="heading-lg" style="margin-bottom: 8px;">Session Expired</h1>
+            <p class="body-text" style="color: var(--text-muted); margin-bottom: 32px;">For your security, you have been logged out due to inactivity.</p>
+            <button id="relogin-btn" class="btn btn-primary" style="width: 100%;">Log Back In</button>
+        </div>
+    </div>
+
+<script src="app.js?v=21"></script>
+</body>
+</html>

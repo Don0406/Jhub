@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | Tour Instance</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .main-content { padding: 40px; overflow-y: auto; background-color: var(--bg-primary); }
+        
+        /* Tab System Styles */
+        
+        .tab-container { border-bottom: 1px solid var(--border-color); margin-bottom: 24px; display: flex; gap: 32px; }
+        .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 16px; font-weight: 600; padding: 12px 0; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-btn:hover { color: var(--text-primary); }
+        .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .panel { background-color: var(--bg-secondary); padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 24px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { text-align: left; padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand-logo" style="margin-bottom: 32px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="logo-text">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Operator</span></span>
+        </div>
+        
+            <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                <!-- UPDATED: Smart Back Button -->
+                <a href="#" onclick="smartBack(); return false;" class="body-text" style="color: var(--text-muted); text-decoration: none;">← Back</a>
+                
+                <a href="#" id="logout-btn" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;">
+                <div>
+                    <h1 class="heading-xl">Sagada Weekend Retreat</h1>
+                    <p class="body-text" style="color: var(--text-muted); margin-top: 4px;">Departure: Oct 12, 2026</p>
+                </div>
+                <div style="text-align: right;">
+                    <span class="badge" style="background-color: rgba(234, 179, 8, 0.2); color: var(--status-watch); padding: 8px 16px; font-size: 14px;">WATCH STATUS</span>
+                    <p class="body-sm" style="margin-top: 8px;">Validation Deadline: 48 Hrs</p>
+                </div>
+            </div>
+
+            <div class="tab-container" id="tour-tabs">
+                <button class="tab-btn active" data-target="Overview">Overview</button>
+                <button class="tab-btn" data-target="Manifest">Manifest</button>
+                <button class="tab-btn" data-target="Financials">Financials</button>
+                <button class="tab-btn" data-target="Compliance">Compliance</button>
+                <button class="tab-btn" data-target="Logs">Logs</button>
+                <button class="tab-btn" data-target="Heuristics">Affinity Clustering</button>
+            </div>
+
+            <div id="Overview" class="tab-content active">
+                <div class="panel">
+                    <h3 class="heading-md" style="margin-bottom: 16px;">Threshold Gauge (TBVE)</h3>
+                    <div style="width: 100%; height: 24px; background-color: var(--bg-primary); border-radius: 12px; overflow: hidden; margin-bottom: 12px;">
+                        <div style="height: 100%; width: 64%; background-color: var(--status-watch);"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span class="body-text">9 Seats Filled (64%)</span>
+                        <span class="body-text">MRP: 10 Seats (Break-Even)</span>
+                        <span class="body-text">Capacity: 14</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="Manifest" class="tab-content">
+                <div class="panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 class="heading-md">Passenger Manifest</h3>
+                        <button id="prescriptive-merge-btn" class="btn btn-secondary">Prescriptive Merge</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="label-text">JOINER NAME</th>
+                                <th class="label-text">SEAT</th>
+                                <th class="label-text">PAYMENT</th>
+                                <th class="label-text">WAIVER</th>
+                                <th class="label-text">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="body-text">Juan Dela Cruz</td>
+                                <td class="body-text">1A</td>
+                                <td><span style="color: var(--status-go);">Verified</span></td>
+                                <td><span style="color: var(--status-go);">Signed</span></td>
+                                <td><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" disabled>Manage</button></td>
+                            </tr>
+                            <tr>
+                                <td class="body-text">Maria Clara</td>
+                                <td class="body-text">1B</td>
+                                <td><span style="color: var(--status-watch);">Pending PoP</span></td>
+                                <td><span style="color: var(--status-nogo);">Missing</span></td>
+                                <td><button id="validate-pop-btn" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">Validate PoP</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- UPDATED: Financials Tab Data -->
+            <div id="Financials" class="tab-content">
+                <div class="panel">
+                    <h3 class="heading-md">Financial Ledger (Restricted Escrow)</h3>
+                    
+                    <table class="data-table" style="margin-top: 16px;">
+                        <thead>
+                            <tr>
+                                <th class="label-text">JOINER NAME</th>
+                                <th class="label-text">BASE FARE</th>
+                                <th class="label-text">ADD-ONS</th>
+                                <th class="label-text">TOTAL PAID</th>
+                                <th class="label-text">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="body-text" style="font-weight: 500;">Juan Dela Cruz</td>
+                                <td class="body-text" style="font-family: monospace;">₱3,500.00</td>
+                                <td class="body-text" style="color: var(--text-muted);">None</td>
+                                <td class="body-text" style="font-family: monospace; font-weight: 600;">₱3,500.00</td>
+                                <td><span class="badge" style="background-color: rgba(46, 204, 133, 0.2); color: var(--status-go);">Cleared</span></td>
+                            </tr>
+                            <tr>
+                                <td class="body-text" style="font-weight: 500;">Maria Clara</td>
+                                <td class="body-text" style="font-family: monospace;">₱3,500.00</td>
+                                <td class="body-text" style="color: var(--text-muted);">₱500 (Solo Tent)</td>
+                                <td class="body-text" style="font-family: monospace; font-weight: 600;">₱4,000.00</td>
+                                <td><span class="badge" style="background-color: rgba(234, 179, 8, 0.2); color: var(--status-watch);">Pending Escrow</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top: 24px; padding: 16px; background-color: var(--bg-primary); border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid var(--border-color); align-items: center;">
+                        <span class="body-text" style="font-weight: 600;">Total Instance Revenue:</span>
+                        <span class="heading-md" style="color: var(--status-go);">₱7,500.00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="Compliance" class="tab-content">
+                <div class="panel">
+                    <h3 class="heading-md" style="margin-bottom: 16px;">Document Checklist (Compliance)</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="label-text">PASSENGER NAME</th>
+                                <th class="label-text">DIGITAL WAIVER</th>
+                                <th class="label-text">VALID ID</th>
+                                <th class="label-text">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="heading-md">Juan Dela Cruz</td>
+                                <td>
+                                    <span style="color: var(--status-go); font-weight: 600;">✓ Signed</span>
+                                    <p class="body-sm" style="color: var(--text-muted);">IP: 192.168.1.1</p>
+                                </td>
+                                <td><span style="color: var(--status-go); font-weight: 600;">✓ Verified</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">View Documents</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="heading-md">Maria Clara</td>
+                                <td><span style="color: var(--status-nogo); font-weight: 600;">! Pending Signature</span></td>
+                                <td><span style="color: var(--status-watch); font-weight: 600;">Pending Review</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 4px 12px; font-size: 12px;" onclick="alert(`Opening Maria's uploaded Passport image for verification...`)">Verify ID</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- UPDATED: Logs Tab Data -->
+            <div id="Logs" class="tab-content">
+                <div class="panel">
+                    <h3 class="heading-md">Audit Trail</h3>
+                    <table class="data-table" style="margin-top: 16px;">
+                        <thead>
+                            <tr>
+                                <th class="label-text">TIMESTAMP</th>
+                                <th class="label-text">USER / SYSTEM</th>
+                                <th class="label-text">EVENT</th>
+                                <th class="label-text">DETAILS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-family: monospace; font-size: 13px; color: var(--text-muted);">Oct 05, 10:42 AM</td>
+                                <td><span class="badge" style="background-color: rgba(59, 130, 246, 0.2); color: var(--accent-blue);">System Auto</span></td>
+                                <td class="body-text" style="font-weight: 600;">Threshold Alert</td>
+                                <td class="body-text" style="color: var(--text-muted);">Break-even threshold reached (64%).</td>
+                            </tr>
+                            <tr>
+                                <td style="font-family: monospace; font-size: 13px; color: var(--text-muted);">Oct 04, 02:15 PM</td>
+                                <td class="body-text" style="font-weight: 500;">TravelTayo Agency</td>
+                                <td class="body-text" style="font-weight: 600;">PoP Upload</td>
+                                <td class="body-text" style="color: var(--text-muted);">Uploaded receipt for Maria Clara.</td>
+                            </tr>
+                            <tr>
+                                <td style="font-family: monospace; font-size: 13px; color: var(--text-muted);">Oct 04, 09:00 AM</td>
+                                <td class="body-text" style="font-weight: 500;">Juan Dela Cruz</td>
+                                <td class="body-text" style="font-weight: 600;">Direct Booking</td>
+                                <td class="body-text" style="color: var(--text-muted);">Seat 1A reserved via Guest Portal.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="Heuristics" class="tab-content">
+                <div class="panel">
+                    <h3 class="heading-md" style="margin-bottom: 24px;">Sub-Group Clustering (Heuristic Match)</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="label-text">Sub-Group / Cluster</th>
+                                <th class="label-text">Assigned Passengers (IDs)</th>
+                                <th class="label-text">Primary Matching Trait (Dominant Heuristic Weight)</th>
+                                <th class="label-text">Group Cohesion Score</th>
+                                <th class="label-text">Seating/Logistical Recommendation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">Cluster A</strong>
+                                    <em style="color: var(--text-muted); font-size: 14px;">(Quiet/Nature)</em>
+                                </td>
+                                <td class="body-text" style="line-height: 1.8;">
+                                    • Juan M. (#104)<br>
+                                    • Maria C. (#105)<br>
+                                    • Kevin S. (#109)
+                                </td>
+                                <td class="body-text">Low Social Interaction, Photography, Age Bracket 20–25</td>
+                                <td class="heading-md">92%</td>
+                                <td class="body-text">Assign to the rear rows of the vehicle; pair together during trail hikes.</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">Cluster B</strong>
+                                    <em style="color: var(--text-muted); font-size: 14px;">(High-Energy)</em>
+                                </td>
+                                <td class="body-text" style="line-height: 1.8;">
+                                    • Althea B. (#101)<br>
+                                    • David T. (#102)
+                                </td>
+                                <td class="body-text">High Social Interaction, Vlogging, Solo Travelers</td>
+                                <td class="heading-md">88%</td>
+                                <td class="body-text">Assign near the tour coordinator/front rows for group activities.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+<script src="app.js?v=23"></script>
+</body>
+</html>

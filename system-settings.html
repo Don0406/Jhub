@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>J-Hub | System Settings</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .main-content { padding: 40px; overflow-y: auto; background-color: var(--bg-primary); max-width: 1000px; width: 100%; }
+        .settings-panel { background-color: var(--bg-secondary); padding: 32px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 24px; }
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand-logo" style="margin-bottom: 32px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="logo-text">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Operator</span></span>
+        </div>
+        
+            <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                <a href="operator-dashboard.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+                <a href="tour-management.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Tour Management</a>
+                <a href="booking-queue.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Booking Queue</a>
+                <a href="financial-dashboard.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Financial Ledger</a>
+                <a href="vendor-management.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Vendors</a>
+                <a href="user-management.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">User Management (RBAC)</a>
+                <a href="reports-exports.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Reports & Export</a>
+                <a href="notifications.html" class="body-text" style="color: var(--text-muted); text-decoration: none;">Notifications <span class="badge" style="background-color: var(--status-nogo); color: white; margin-left: 8px;">2</span></a>
+                <a href="system-settings.html" class="body-text" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">System Settings</a>
+                
+                <a href="login.html" id="logout-btn" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <h1 class="heading-xl" style="margin-bottom: 32px;">Global Configuration</h1>
+
+            <form id="settings-form">
+                
+                <div class="settings-panel">
+                    <h3 class="heading-md" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Operational Thresholds</h3>
+                    <div class="settings-grid">
+                        <div>
+                            <label class="label-text">Default Validation Deadline (Hours before departure)</label>
+                            <input type="number" class="input-field" value="48" style="margin-top: 8px;">
+                        </div>
+                        <div>
+                            <label class="label-text">Grace Period for Pending Payments (Hours)</label>
+                            <input type="number" class="input-field" value="12" style="margin-top: 8px;">
+                        </div>
+                        <div>
+                            <label class="label-text">Safety Margin % for Break-Even (TBVE)</label>
+                            <input type="number" class="input-field" value="15" style="margin-top: 8px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-panel">
+                    <h3 class="heading-md" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">SMTP & Notifications</h3>
+                    <div class="settings-grid">
+                        <div>
+                            <label class="label-text">SMTP Host</label>
+                            <input type="text" class="input-field" value="smtp.j-hub.com" style="margin-top: 8px;">
+                        </div>
+                        <div>
+                            <label class="label-text">SMTP Port</label>
+                            <input type="number" class="input-field" value="587" style="margin-top: 8px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 32px;">Save Configurations</button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+<script src="app.js?v=22"></script>
+</body>
+</html>
