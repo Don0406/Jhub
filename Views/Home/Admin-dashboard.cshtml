@@ -1,0 +1,123 @@
+@model IEnumerable<_UPDATED__FrontEnd_Capstone.Models.Tour>
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | Admin Dashboard</title>
+    <style>
+        :root { --bg-primary: #0f172a; --bg-secondary: #1e293b; --border-color: #334155; --text-primary: #ffffff; --text-muted: #94a3b8; --accent-blue: #3b82f6; --status-go: #22c55e; --status-watch: #eab308; --status-nogo: #ef4444; }
+        body { margin: 0; padding: 0; box-sizing: border-box; background-color: var(--bg-primary); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text-primary); }
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr 350px; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .main-content { padding: 32px; overflow-y: auto; background-color: var(--bg-primary); }
+        .analytics-panel { background-color: var(--bg-secondary); padding: 24px; border-left: 1px solid var(--border-color); }
+        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        .data-table th, .data-table td { text-align: left; padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: rgba(0,0,0,0.2); font-size: 12px; letter-spacing: 0.05em; color: var(--text-muted); }
+        .heading-xl { font-size: 28px; font-weight: 700; margin: 0; }
+        .heading-md { font-size: 15px; font-weight: 600; margin: 0; }
+        .body-text { font-size: 14px; line-height: 1.5; margin: 0; }
+        .label-text { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
+        .brand-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+        .logo-text { font-size: 20px; font-weight: 800; color: #ffffff; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-secondary { background-color: #475569; color: white; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .bg-go { background-color: rgba(34, 197, 94, 0.2); color: var(--status-go); }
+        .bg-watch { background-color: rgba(234, 179, 8, 0.2); color: var(--status-watch); }
+        .bg-nogo { background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); }
+        .bg-full { background-color: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 4px;">Admin Dashboard</span></span>
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                <a href="/Home/AdminDashboard" class="body-text" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">Dashboard</a>
+                <a href="/Tour/Management" class="body-text" style="color: var(--text-muted); text-decoration: none;">Tour Management</a>
+                <a href="/User/BookingQueue" class="body-text" style="color: var(--text-muted); text-decoration: none;">Booking Queue</a>
+                <a href="/Tour/VendorManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">Vendors</a>
+                <a href="/User/UserManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">User Management (RBAC)</a>
+                <a href="/Home/Logout" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h1 class="heading-xl">Current Tours</h1>
+                <a href="/User/BookingQueue" class="btn btn-primary" style="text-decoration: none;">Open Booking Queue</a>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="label-text">TOUR NAME / DESTINATION</th>
+                        <th class="label-text">SLOTS FILLED</th>
+                        <th class="label-text">SYSTEM STATUS</th>
+                        <th class="label-text">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null) {
+                        foreach (var t in Model) {
+                            var statuses = ViewBag.TourStatuses as Dictionary<int, string>;
+                            var status = (statuses != null && statuses.ContainsKey(t.Id)) ? statuses[t.Id] : "WATCH";
+                            string css = status == "NO-GO" ? "bg-nogo"
+                                       : (status == "FULL" ? "bg-full"
+                                       : (status == "GO" ? "bg-go" : "bg-watch"));
+                            <tr>
+                                <td class="heading-md">@t.TourName</td>
+                                <td class="body-text">@t.SlotsFilled / @t.TotalCapacity</td>
+                                <td><span class="badge @css">@status</span></td>
+                                <td><a href="/Tour/Management" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">View</a></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </main>
+
+        <aside class="analytics-panel">
+            <h3 class="heading-md" style="margin-bottom: 24px;">Financial Analytics</h3>
+            <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <p class="label-text">NET PAYABLES</p>
+                <p id="net-payable-display" style="font-size: 24px; font-weight: 700; color: var(--status-go); margin: 4px 0 0 0;">Calculating...</p>
+            </div>
+            <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 12px;">
+                <p class="label-text">TOTAL REVENUE</p>
+                <p id="total-revenue-display" style="font-size: 18px; font-weight: 700; margin: 4px 0 0 0;">—</p>
+            </div>
+            <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 12px;">
+                <p class="label-text">OPERATIONAL COSTS</p>
+                <p id="total-costs-display" style="font-size: 18px; font-weight: 700; color: var(--status-nogo); margin: 4px 0 0 0;">—</p>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        function formatPeso(n) {
+            return '₱' + Number(n).toLocaleString('en-PH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        fetch('/Tour/CalculateNetPayables')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('net-payable-display').innerText = formatPeso(data.netPayable);
+                document.getElementById('total-revenue-display').innerText = formatPeso(data.totalRevenue);
+                document.getElementById('total-costs-display').innerText = formatPeso(data.totalOperationalCosts);
+            })
+            .catch(() => {
+                document.getElementById('net-payable-display').innerText = 'Error';
+            });
+    </script>
+</body>
+</html>

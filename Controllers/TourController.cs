@@ -141,6 +141,13 @@ public async Task<IActionResult> CalculateNetPayables()
     [Route("User/UserManagement")]
     public async Task<IActionResult> UserManagement()
     {
+        var userRole = HttpContext.Session.GetString("UserRole");
+
+        if (userRole != "admin")
+        {
+            return RedirectToAction("OperatorDashboard", "Tour");
+        }
+
         return View("~/Views/User/User-management.cshtml", await _context.Users.ToListAsync());
     }
     
@@ -261,9 +268,44 @@ public async Task<IActionResult> CalculateNetPayables()
 
         return View("~/Views/Home/Operator-dashboard.cshtml", tours);
     }
+// --- ADMIN DASHBOARD ---
+[HttpGet]
+[Route("Home/AdminDashboard")]
+public async Task<IActionResult> AdminDashboard()
+{
+    var tours = await _context.Tours
+        .Include(t => t.Bookings)
+        .AsNoTracking()
+        .ToListAsync();
 
-    
- // --- TOUR MANAGEMENT EDITING ---
+    foreach (var t in tours)
+    {
+        t.SlotsFilled = t.Bookings != null
+            ? t.Bookings
+                .Where(b => b.Status == "Validated" || b.Status == "Pending Validation")
+                .Sum(b => b.Slots)
+            : 0;
+    }
+
+    var tourStatuses = tours.ToDictionary(t => t.Id, t =>
+    {
+        double occ = t.TotalCapacity > 0
+            ? (double)t.SlotsFilled / t.TotalCapacity
+            : 0;
+
+        if (t.Status == "Cancelled") return "NO-GO";
+        if (occ >= 0.9) return "FULL";
+        if (occ >= 0.5) return "GO";
+        return "WATCH";
+    });
+
+    ViewBag.TourStatuses = tourStatuses;
+
+    return View("~/Views/Home/Admin-dashboard.cshtml", tours);
+}
+
+
+// --- TOUR MANAGEMENT EDITING ---
 [HttpGet]
 [Route("Tour/Management")]
 public async Task<IActionResult> Management(string? search, string? status)
@@ -272,21 +314,22 @@ public async Task<IActionResult> Management(string? search, string? status)
 
     q = q.Where(t => t.Status != "Archived");
 
-    if (!string.IsNullOrEmpty(search)) 
+    if (!string.IsNullOrEmpty(search))
         q = q.Where(t => t.TourName.Contains(search) || t.Destination.Contains(search));
-    
-    if (!string.IsNullOrEmpty(status) && status != "All Statuses") 
+
+    if (!string.IsNullOrEmpty(status) && status != "All Statuses")
         q = q.Where(t => t.Status == status);
 
     q = q.OrderByDescending(t => t.IsBoosted).ThenByDescending(t => t.Id);
 
     var tours = await q.Include(t => t.Vendor)
-                        .Include(t => t.Bookings)
-                        .ToListAsync();
+                       .Include(t => t.Bookings)
+                       .ToListAsync();
 
     var vendorPayablesMap = new Dictionary<int, decimal>();
 
     foreach (var t in tours)
+    
     {
         // Gamitin muna kung ano talaga ang naka-save na OperationalCost sa Tour table
         decimal totalCost = t.OperationalCost;

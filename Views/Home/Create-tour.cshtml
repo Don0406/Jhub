@@ -1,3 +1,7 @@
+@{
+    var userRole = Context.Session.GetString("UserRole")?.ToLower();
+    var displayRole = userRole == "admin" ? "Admin" : "Operator";
+}
 @{ Layout = null; }
 <!DOCTYPE html>
 <html lang="en">
@@ -163,7 +167,7 @@
 <body>
     <div class="dashboard-layout">
         <aside class="sidebar">
-            <div style="margin-bottom: 32px; font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">Operator</span></div>
+            <div style="margin-bottom: 32px; font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">@displayRole</span></div>
             <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
                 <a href="/Home/OperatorDashboard" class="body-text" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
                 <a href="/Tour/Management" class="body-text" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">Tour Management</a>
