@@ -48,11 +48,12 @@ public class HomeController : Controller
         }
         
         string userRole = user.Role?.ToLower() ?? "operator";
+        HttpContext.Session.SetString("UserRole", userRole);
 
         return userRole switch
         {
             "operator"    => RedirectToAction("OperatorDashboard", "Tour"),
-            "admin"       => RedirectToAction("OperatorDashboard", "Tour"),
+            "admin"       => RedirectToAction("AdminDashboard", "Tour"),
             _             => RedirectToAction("Login")
         };
     }
@@ -109,7 +110,7 @@ public class HomeController : Controller
         return newUser.Role switch
         {
             "operator"    => RedirectToAction("OperatorDashboard", "Tour"),
-            "admin"       => RedirectToAction("OperatorDashboard", "Tour"),
+            "admin"       => RedirectToAction("AdminDashboard", "Tour"),
             _             => RedirectToAction("Login")
         };
     }
@@ -129,6 +130,7 @@ public class HomeController : Controller
     [Route("Home/Logout")]
     public IActionResult Logout()
     {
+        HttpContext.Session.Clear();
         return RedirectToAction("Login");
     }
 }

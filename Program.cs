@@ -6,12 +6,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+
 // Register the Database Context using the official Oracle MySQL driver
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySQL(connectionString));
 
-// >>> ILAGAY MO DITO ANG GEMINI SERVICE REGISTRATION <<<
+// Gemini Service
 builder.Services.AddHttpClient<GeminiService>();
 
 var app = builder.Build();
@@ -26,6 +29,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();
