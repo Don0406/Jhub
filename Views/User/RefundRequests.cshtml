@@ -1,0 +1,201 @@
+@model IEnumerable<_UPDATED__FrontEnd_Capstone.Models.Booking>
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>J-Hub | Refund Requests</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a; --bg-secondary: #1e293b; --border-color: #334155;
+            --text-primary: #ffffff; --text-muted: #94a3b8; --accent-blue: #3b82f6; 
+            --status-nogo: #ef4444; --status-go: #22c55e; --status-watch: #eab308;
+        }
+        body { margin: 0; padding: 0; box-sizing: border-box; background-color: var(--bg-primary); font-family: system-ui, sans-serif; color: var(--text-primary); }
+        .main-content { padding: 40px; max-width: 1300px; margin: 0 auto; background-color: var(--bg-primary); min-height: 100vh; box-sizing: border-box; }
+        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden; margin-bottom: 40px; }
+        .data-table th, .data-table td { text-align: left; padding: 16px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+        .data-table th { background-color: rgba(0,0,0,0.2); font-size: 12px; letter-spacing: 0.05em; color: var(--text-muted); }
+        .heading-xl { font-size: 28px; font-weight: 700; margin: 0; }
+        .heading-md { font-size: 15px; font-weight: 600; margin: 0; }
+        .body-text { font-size: 14px; line-height: 1.5; margin: 0; }
+        .body-sm { font-size: 13px; line-height: 1.4; margin: 0; color: var(--text-muted); }
+        .label-text { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
+        .brand-logo { font-size: 20px; font-weight: 800; color: #ffffff; text-decoration: none; }
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; text-decoration: none; display: inline-block; }
+        .btn-view { background-color: var(--accent-blue); color: white; }
+        .btn-approve { background-color: var(--status-go); color: white; }
+        .btn-history { background-color: #334155; color: white; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-card { background: var(--bg-secondary); padding: 24px; border-radius: 12px; width: 480px; max-height: 90vh; overflow-y: auto; }
+        input[type="text"], select, textarea, input[type="file"] { width: 100%; background-color: var(--bg-primary); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 6px; font-size: 14px; box-sizing: border-box; margin-top: 6px; }
+    </style>
+</head>
+<body>
+
+    <main class="main-content">
+        <!-- TOP HEADER WITH BACK TO QUEUE BUTTON -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+            <a href="/User/BookingQueue" class="brand-logo">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">Refund Management</span></a>
+            <div>
+                <a href="/User/BookingQueue" class="btn btn-history">← Back to Booking Queue</a>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h1 class="heading-xl">Joiner Refund Requests</h1>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="label-text">JOINER / TOUR</th>
+                    <th class="label-text">REF # & AMOUNT</th>
+                    <th class="label-text">REFUND DETAILS (REASON / CHANNEL)</th>
+                    <th class="label-text">STATUS & REPLY</th>
+                    <th class="label-text">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">No refund requests found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var b in Model) {
+                        <tr>
+                            <td>
+                                <div class="heading-md">@b.LeadName</div>
+                                <div class="body-sm" style="color: var(--accent-blue); margin-top: 2px;">@b.Tour?.TourName</div>
+                                <div class="body-sm" style="margin-top: 2px;">Phone: @b.LeadPhone</div>
+                            </td>
+                            <td>
+                                <div class="body-text"><strong>@b.ReferenceNumber</strong></div>
+                                <div class="body-text" style="color: var(--status-go); font-weight: 700; margin-top: 4px;">
+                                    ₱@b.TotalAmount.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)
+                                </div>
+                            </td>
+                            <td>
+                                <div class="body-text"><strong>Reason:</strong> @b.RefundReason</div>
+                                <div class="body-sm" style="margin-top: 4px;"><strong>Channel:</strong> @b.RefundPayoutChannel</div>
+                                @if (!string.IsNullOrEmpty(b.RefundNotes))
+                                {
+                                    <div class="body-sm" style="margin-top: 4px; font-style: italic;">Notes: "@b.RefundNotes"</div>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    string statusBg = "rgba(234, 179, 8, 0.2)";
+                                    string statusFg = "var(--status-watch)";
+                                    if (b.RefundStatus == "Approved") { statusBg = "rgba(34, 197, 94, 0.2)"; statusFg = "var(--status-go)"; }
+                                    else if (b.RefundStatus == "Rejected") { statusBg = "rgba(239, 68, 68, 0.2)"; statusFg = "var(--status-nogo)"; }
+                                }
+                                <span class="badge" style="background-color: @statusBg; color: @statusFg;">
+                                    @b.RefundStatus
+                                </span>
+                                
+                                @if (!string.IsNullOrEmpty(b.RefundOperatorMessage))
+                                {
+                                    <div class="body-sm" style="margin-top: 6px; color: var(--text-primary);"><strong>Reply:</strong> @b.RefundOperatorMessage</div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(b.RefundProofPath))
+                                {
+                                    <div class="body-sm" style="margin-top: 6px;">
+                                        <a href="@b.RefundProofPath" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">View Refund Proof</a>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <button type="button" 
+                                        class="btn btn-view" 
+                                        onclick="openReplyModal(this)"
+                                        data-id="@b.Id"
+                                        data-name="@b.LeadName"
+                                        data-status="@b.RefundStatus"
+                                        data-message="@b.RefundOperatorMessage">
+                                    Reply / Update
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </main>
+
+    <div id="reply-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="heading-md" id="modal-title" style="margin-bottom: 16px; font-size: 18px;">Manage Refund Request</h2>
+            <form id="replyForm" onsubmit="submitRefundUpdate(event)" enctype="multipart/form-data">
+                <input type="hidden" id="modalBookingId" name="bookingId" />
+                
+                <div style="margin-bottom: 14px;">
+                    <label class="label-text">REFUND STATUS</label>
+                    <select id="modalRefundStatus" name="refundStatus" required>
+                        <option value="Requested">Requested (Pending)</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 14px;">
+                    <label class="label-text">OPERATOR MESSAGE / REPLY</label>
+                    <textarea id="modalOperatorMessage" name="operatorMessage" rows="3" placeholder="Mag-iwan ng mensahe o dahilan sa joiner..."></textarea>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="label-text">UPLOAD PROOF OF REFUND PAYMENT</label>
+                    <input type="file" id="modalRefundProofFile" name="refundProofFile" accept="image/*,application/pdf" />
+                    <span class="body-sm" style="display: block; margin-top: 4px; color: var(--text-muted);">Ilagay ang resibo o transaction screenshot.</span>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button type="submit" class="btn btn-approve" style="flex: 1;">Save & Send</button>
+                    <button type="button" class="btn" style="background: #475569; color: white;" onclick="document.getElementById('reply-modal').style.display='none'">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openReplyModal(button) {
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const currentStatus = button.getAttribute('data-status');
+            const currentMessage = button.getAttribute('data-message');
+
+            document.getElementById('modalBookingId').value = id;
+            document.getElementById('modal-title').innerText = "Manage Refund: " + name;
+            document.getElementById('modalRefundStatus').value = currentStatus || "Requested";
+            document.getElementById('modalOperatorMessage').value = (currentMessage === "null" ? "" : currentMessage) || "";
+            document.getElementById('modalRefundProofFile').value = "";
+            document.getElementById('reply-modal').style.display = 'flex';
+        }
+
+        function submitRefundUpdate(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('replyForm'));
+
+            fetch('/Refund/ProcessRefundOperator', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || "Failed to update refund request.");
+                }
+            })
+            .catch(err => alert("System error occurred."));
+        }
+    </script>
+</body>
+</html>

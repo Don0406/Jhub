@@ -32,18 +32,19 @@ public class TourController : Controller
         return View("~/Views/User/Booking-queue.cshtml", bookings);
     }
     
-   [HttpGet]
-   [Route("User/BookingHistory")]
-    public async Task<IActionResult> BookingHistory()
-    {
-        var bookings = await _context.Set<Booking>()
-                                    .Include(b => b.Tour)
-                                    .Where(b => b.Status == "Validated" || b.Status == "Rejected")
-                                    .OrderByDescending(b => b.BookingDate)
-                                    .ToListAsync();
+  [HttpGet]
+  [Route("User/BookingHistory")]
+public async Task<IActionResult> BookingHistory()
+{
+    var bookings = await _context.Set<Booking>()
+                            .Include(b => b.Tour)
         
-        return View("~/Views/User/Booking-history.cshtml", bookings);
-    }
+                            .Where(b => b.Status == "Validated" || b.Status == "Rejected")
+                            .OrderByDescending(b => b.BookingDate)
+                            .ToListAsync();
+    
+    return View("~/Views/User/Booking-history.cshtml", bookings);
+}
 
     // --- DELETE SINGLE BOOKING FROM HISTORY ---
     [HttpGet]
@@ -76,71 +77,65 @@ public class TourController : Controller
         return RedirectToAction(nameof(BookingHistory));
     }
 
+[HttpPost]
+[Route("User/ApproveBooking")]
+public async Task<IActionResult> ApproveBooking(int id)
+{
+    var b = await _context.Set<Booking>().Include(b => b.Tour).FirstOrDefaultAsync(x => x.Id == id);
+    if (b == null || b.Tour == null) 
+        return Json(new { success = false, message = "Record not found" });
 
-    [HttpPost]
-    [Route("User/ApproveBooking")]
-    public async Task<IActionResult> ApproveBooking(int id)
+    if (b.Status == "Validated" || b.Status == "Approved") 
+        return Json(new { success = false, message = "Booking is already approved or validated." });
+
+    if ((b.Tour.SlotsFilled + b.Slots) > b.Tour.TotalCapacity)
     {
-        var b = await _context.Set<Booking>().Include(b => b.Tour).FirstOrDefaultAsync(x => x.Id == id);
-        if (b == null || b.Tour == null) return Json(new { success = false, message = "Record not found" });
-
-        if (b.Status == "Validated") return Json(new { success = false, message = "Booking already validated" });
-
-        if ((b.Tour.SlotsFilled + b.Slots) > b.Tour.TotalCapacity)
-        {
-            return Json(new { success = false, message = "Not enough slots available in this tour." });
-        }
-
-        b.Status = "Validated";
-        b.Tour.SlotsFilled += b.Slots;
-
-        await _context.SaveChangesAsync();
-        return Json(new { success = true });
+        return Json(new { success = false, message = "Not enough slots available in this tour." });
     }
 
-    [HttpPost]
-    [Route("User/RejectBooking")]
-    public async Task<IActionResult> RejectBooking(int id)
+    b.Status = "Validated";
+    b.IsApproved = true;
+    b.Tour.SlotsFilled += b.Slots;
+
+    await _context.SaveChangesAsync();
+    return Json(new { success = true });
+}
+ 
+
+[HttpPost]
+[Route("User/RejectBooking")]
+public async Task<IActionResult> RejectBooking(int id)
+{
+    var b = await _context.Set<Booking>().Include(b => b.Tour).FirstOrDefaultAsync(x => x.Id == id);
+    if (b == null) return Json(new { success = false });
+
+    if (b.Status == "Validated" && b.Tour != null)
     {
-        var b = await _context.Set<Booking>().Include(b => b.Tour).FirstOrDefaultAsync(x => x.Id == id);
-        if (b == null) return Json(new { success = false });
-
-        if (b.Status == "Validated" && b.Tour != null)
-        {
-            b.Tour.SlotsFilled -= b.Slots;
-        }
-
-        b.Status = "Rejected";
-        await _context.SaveChangesAsync();
-        return Json(new { success = true });
+        b.Tour.SlotsFilled -= b.Slots;
     }
 
-    // --- NET PAYABLE ---
+    b.Status = "Rejected";
+    b.IsApproved = false;
+    
+    await _context.SaveChangesAsync();
+    return Json(new { success = true });
+}
+    // --- TOTAL PAYABLE ---
     [HttpGet]
-    [Route("Tour/CalculateNetPayables")]
-    public async Task<IActionResult> CalculateNetPayables()
-    {
-        var tours = await _context.Tours
-            .Include(t => t.Bookings)
-            .ToListAsync();
+[Route("Tour/CalculateNetPayables")]
+public async Task<IActionResult> CalculateNetPayables()
+{
+    var activeTours = await _context.Tours
+        .Where(t => t.Status != "Archived" && !t.IsComplete && !t.IsCancelled)
+        .ToListAsync();
 
-        decimal totalRevenue = tours.SelectMany(t => t.Bookings ?? new List<Booking>())
-                                    .Where(b => b.Status == "Validated")
-                                    .Sum(b => b.TotalAmount);
+    decimal totalOperationalCosts = activeTours.Sum(t => t.OperationalCost);
 
-        decimal totalCosts = _context.Vendors
-            .Where(v => v.TourId != null)
-            .Sum(v => v.Payables);
-        
-        decimal netPayable = totalRevenue - totalCosts;
-
-        return Json(new { 
-            TotalRevenue = totalRevenue, 
-            TotalOperationalCosts = totalCosts, 
-            NetPayable = netPayable 
-        });
-    }
-
+    return Json(new { 
+        TotalOperationalCosts = totalOperationalCosts 
+    });
+}
+    
     // --- USER MANAGEMENT ---
     [HttpGet]
     [Route("User/UserManagement")]
@@ -191,7 +186,7 @@ public class TourController : Controller
             .Include(t => t.Bookings) 
             .AsNoTracking()
             .ToListAsync();
-     
+   
         foreach (var t in tours)
         {
             int totalSlotsUsed = t.Bookings != null 
@@ -209,70 +204,171 @@ public class TourController : Controller
             return "WATCH";
         });
 
+        // --- CORRECTED CANCELLATION RISK METRICS ---
+        // Low: 1% to 35%
+        // Medium: 36% to 70%
+        // High: 71% to 100% (Kasama na rito ang 3 out of 4 o 75%)
+        var activeTours = tours.Where(x => x.Status != "Archived" && !x.IsCancelled).ToList();
+
+        var lowRiskList = new List<string>();
+        var medRiskList = new List<string>();
+        var highRiskList = new List<string>();
+
+        foreach (var active in activeTours)
+        {
+            string primaryKeyword = !string.IsNullOrEmpty(active.TourName) 
+                ? active.TourName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? active.Destination 
+                : active.Destination;
+
+            if (string.IsNullOrEmpty(primaryKeyword)) continue;
+
+            var matchingTours = tours.Where(t => 
+                (!string.IsNullOrEmpty(t.TourName) && t.TourName.StartsWith(primaryKeyword, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(t.Destination) && t.Destination.Equals(primaryKeyword, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+
+            int totalWithKeyword = matchingTours.Count;
+            int cancelledCount = matchingTours.Count(t => t.IsCancelled);
+
+            if (totalWithKeyword > 0)
+            {
+                double cancelRatio = (double)cancelledCount / totalWithKeyword;
+                int percent = (int)Math.Round(cancelRatio * 100);
+
+                // Low Risk: 1% to 35%
+                if (cancelRatio > 0 && cancelRatio <= 0.35)
+                {
+                    lowRiskList.Add($"{active.TourName} ({cancelledCount}/{totalWithKeyword} cancelled - {percent}%)");
+                }
+                // Medium Risk: 36% to 70%
+                else if (cancelRatio > 0.35 && cancelRatio <= 0.70)
+                {
+                    medRiskList.Add($"{active.TourName} ({cancelledCount}/{totalWithKeyword} cancelled - {percent}%)");
+                }
+                // High Risk: 71% to 100% (Pasok na rito ang 75% o 3 out of 4)
+                else if (cancelRatio > 0.70)
+                {
+                    highRiskList.Add($"{active.TourName} ({cancelledCount}/{totalWithKeyword} cancelled - {percent}%)");
+                }
+            }
+        }
+
         ViewBag.TourStatuses = tourStatuses;
+        ViewBag.LowRiskList = lowRiskList;
+        ViewBag.MedRiskList = medRiskList;
+        ViewBag.HighRiskList = highRiskList;
+        ViewBag.HasAnyRisk = lowRiskList.Any() || medRiskList.Any() || highRiskList.Any();
+
         return View("~/Views/Home/Operator-dashboard.cshtml", tours);
     }
 
-    [HttpGet]
-    [Route("Tour/Management")]
-    public async Task<IActionResult> Management(string? search, string? status)
+    
+ // --- TOUR MANAGEMENT EDITING ---
+[HttpGet]
+[Route("Tour/Management")]
+public async Task<IActionResult> Management(string? search, string? status)
+{
+    var q = _context.Tours.AsQueryable();
+
+    q = q.Where(t => t.Status != "Archived");
+
+    if (!string.IsNullOrEmpty(search)) 
+        q = q.Where(t => t.TourName.Contains(search) || t.Destination.Contains(search));
+    
+    if (!string.IsNullOrEmpty(status) && status != "All Statuses") 
+        q = q.Where(t => t.Status == status);
+
+    q = q.OrderByDescending(t => t.IsBoosted).ThenByDescending(t => t.Id);
+
+    var tours = await q.Include(t => t.Vendor)
+                        .Include(t => t.Bookings)
+                        .ToListAsync();
+
+    var vendorPayablesMap = new Dictionary<int, decimal>();
+
+    foreach (var t in tours)
     {
-        var q = _context.Tours.AsQueryable();
+        // Gamitin muna kung ano talaga ang naka-save na OperationalCost sa Tour table
+        decimal totalCost = t.OperationalCost;
 
-        q = q.Where(t => t.Status != "Archived");
-
-        if (!string.IsNullOrEmpty(search)) 
-            q = q.Where(t => t.TourName.Contains(search) || t.Destination.Contains(search));
-        
-        if (!string.IsNullOrEmpty(status) && status != "All Statuses") 
-            q = q.Where(t => t.Status == status);
-
-        q = q.OrderByDescending(t => t.IsBoosted).ThenByDescending(t => t.Id);
-
-        var tours = await q.Include(t => t.Vendor)
-                            .Include(t => t.Bookings)
-                            .ToListAsync();
-
-        foreach (var t in tours)
+        // Kung sakaling 0 pero may vendor payables, saka lang natin kunin sa Vendor table
+        if (totalCost == 0)
         {
-            t.SlotsFilled = t.Bookings != null 
-                ? t.Bookings.Where(b => b.Status == "Validated").Sum(b => b.Slots) 
-                : 0;
+            if (t.Vendor != null)
+            {
+                totalCost += t.Vendor.Payables;
+            }
+
+            var linkedVendorsSum = await _context.Vendors
+                .Where(v => v.TourId == t.Id)
+                .SumAsync(v => (decimal?)v.Payables) ?? 0;
+
+            totalCost += linkedVendorsSum;
         }
 
-        return View("~/Views/Home/Tour-management.cshtml", tours);
+        if (totalCost > 0)
+        {
+            vendorPayablesMap[t.Id] = totalCost;
+        }
+
+        t.SlotsFilled = t.Bookings != null 
+            ? t.Bookings.Where(b => b.Status == "Validated").Sum(b => b.Slots) 
+            : 0;
     }
+    
+    ViewBag.VendorPayablesMap = vendorPayablesMap;
+
+    return View("~/Views/Home/Tour-management.cshtml", tours);
+}
 
     // --- ARCHIVE TOUR MANAGEMENT ---
     [HttpPost]
-    [Route("Tour/ArchiveTour")]
-    public async Task<IActionResult> ArchiveTour(int id)
+    [Route("Tour/MarkAsComplete")]
+public async Task<IActionResult> MarkAsComplete(int id)
+{
+    var t = await _context.Tours.FindAsync(id);
+    if (t != null)
     {
-        var t = await _context.Tours.FindAsync(id);
-        if (t != null)
-        {
-            t.Status = "Archived";
-            t.ArchivedAt = DateTime.Now; 
-            await _context.SaveChangesAsync();
-        }
-        return Redirect(Url.Action("Management", "Tour") ?? "/Tour/Management");
+        t.Status = "Archived";
+        t.ArchivedAt = DateTime.Now; 
+        await _context.SaveChangesAsync();
     }
+    return Redirect(Url.Action("Management", "Tour") ?? "/Tour/Management");
+}
 
-    [HttpPost]
-    [Route("Tour/RestoreTour")]
-    public async Task<IActionResult> RestoreTour(int id)
+[HttpPost]
+[Route("Tour/RestoreTour")]
+public async Task<IActionResult> RestoreTour(int id)
+{
+    var t = await _context.Tours.FindAsync(id);
+    if (t != null)
     {
-        var t = await _context.Tours.FindAsync(id);
-        if (t != null)
+        t.Status = "Active"; 
+        t.ArchivedAt = null; 
+        await _context.SaveChangesAsync();
+    }
+    return Redirect(Url.Action("ArchivedTours", "Tour") ?? "/Tour/ArchivedTours");
+}
+
+
+//Permanently delete all
+    [HttpPost]
+    [Route("Tour/DeleteAllArchivedTours")]
+    public async Task<IActionResult> DeleteAllArchivedTours()
+    {
+        var archivedTours = await _context.Tours
+            .Where(t => t.Status == "Completed" || t.Status == "Archived")
+            .ToListAsync();
+
+        if (archivedTours.Any())
         {
-            t.Status = "Active"; 
-            t.ArchivedAt = null; 
+            _context.Tours.RemoveRange(archivedTours);
             await _context.SaveChangesAsync();
         }
         return Redirect(Url.Action("ArchivedTours", "Tour") ?? "/Tour/ArchivedTours");
     }
 
-    // --- PERMANENTLY DELETE ARCHIVED TOUR ---
+// --- PERMANENTLY DELETE ARCHIVED TOUR ---
     [HttpPost]
     [Route("Tour/DeleteArchivedTour")]
     public async Task<IActionResult> DeleteArchivedTour(int id)
@@ -285,47 +381,51 @@ public class TourController : Controller
         }
         return Redirect(Url.Action("ArchivedTours", "Tour") ?? "/Tour/ArchivedTours");
     }
-
+    
     [HttpGet]
     [Route("Tour/ArchivedTours")]
     public async Task<IActionResult> ArchivedTours()
     {
-        var archivedTours = await _context.Tours
-            .Where(t => t.Status == "Archived")
-            .Include(t => t.Vendor)
-            .Include(t => t.Bookings)
-            .ToListAsync();
+    var archivedTours = await _context.Tours
+        .Where(t => t.Status == "Completed" || t.Status == "Archived")
+        .Include(t => t.Vendor)
+        .Include(t => t.Bookings)
+        .ToListAsync();
 
-        bool changesMade = false;
+    bool changesMade = false;
 
-        foreach (var t in archivedTours.ToList())
+    foreach (var t in archivedTours.ToList())
+    {
+        if (t.ArchivedAt.HasValue)
         {
-            if (t.ArchivedAt.HasValue)
+            var daysInArchive = (DateTime.Now.Date - t.ArchivedAt.Value.Date).Days;
+            if (daysInArchive >= 365)
             {
-                var daysInArchive = (DateTime.Now.Date - t.ArchivedAt.Value.Date).Days;
-                if (daysInArchive >= 365)
-                {
-                    _context.Tours.Remove(t);
-                    archivedTours.Remove(t);
-                    changesMade = true;
-                }
+                _context.Tours.Remove(t);
+                archivedTours.Remove(t);
+                changesMade = true;
             }
         }
-
-        if (changesMade)
-        {
-            await _context.SaveChangesAsync();
-        }
-
-        foreach (var t in archivedTours)
-        {
-            t.SlotsFilled = t.Bookings != null 
-                ? t.Bookings.Where(b => b.Status == "Validated").Sum(b => b.Slots) 
-                : 0;
-        }
-
-        return View("~/Views/Home/Archived-tours.cshtml", archivedTours);
     }
+
+    if (changesMade)
+    {
+        await _context.SaveChangesAsync();
+    }
+
+    foreach (var t in archivedTours)
+    {
+        t.SlotsFilled = t.Bookings != null 
+            ? t.Bookings.Where(b => b.Status == "Validated").Sum(b => b.Slots) 
+            : 0;
+    }
+
+    return View("~/Views/Home/Archived-tours.cshtml", archivedTours);
+}
+
+ 
+
+
 
     // --- CREATE TOUR ---
     [HttpGet("Tour/Create")]
@@ -342,7 +442,7 @@ public class TourController : Controller
         return View("~/Views/Home/Create-tour.cshtml");
     }
 
-    [HttpPost("Tour/Create")]
+   [HttpPost("Tour/Create")]
     public async Task<IActionResult> Create(
         string tourName, 
         string destination, 
@@ -377,6 +477,15 @@ public class TourController : Controller
             filePath = "/images/" + fileName;
         }
 
+        // --- KUNIN ANG SUM NG PAYABLES NG MGA NAPILING VENDORS ---
+        decimal totalOperationalCost = 0;
+        if (vendorIds != null && vendorIds.Count > 0)
+        {
+            totalOperationalCost = await _context.Vendors
+                .Where(v => vendorIds.Contains(v.Id))
+                .SumAsync(v => (decimal?)v.Payables) ?? 0;
+        }
+
         var newTour = new Tour { 
             TourName = tourName, 
             Destination = destination, 
@@ -387,6 +496,7 @@ public class TourController : Controller
             DepartureDate = departureDate, 
             ReturnDate = returnDate, 
             BasePrice = basePrice, 
+            OperationalCost = totalOperationalCost, // <--- Dito naisama ang sum ng payables bilang operational cost
             TotalCapacity = totalCapacity, 
             ImageUrl = filePath, 
             ItineraryHighlights = itineraryHighlights, 
@@ -404,11 +514,15 @@ public class TourController : Controller
             newTour.VendorId = firstSelectedVendorId;
             _context.Tours.Update(newTour);
             
-            var selectedVendor = await _context.Vendors.FindAsync(firstSelectedVendorId);
-            if (selectedVendor != null)
+            // I-update ang mga vendors para ma-link sa TourId na ito
+            foreach (var vId in vendorIds)
             {
-                selectedVendor.TourId = newTour.Id;
-                _context.Vendors.Update(selectedVendor);
+                var vendor = await _context.Vendors.FindAsync(vId);
+                if (vendor != null)
+                {
+                    vendor.TourId = newTour.Id;
+                    _context.Vendors.Update(vendor);
+                }
             }
 
             await _context.SaveChangesAsync();

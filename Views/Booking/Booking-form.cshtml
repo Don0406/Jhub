@@ -4,7 +4,6 @@
     var currentSelectedTourInstance = ViewBag.Tour as _UPDATED__FrontEnd_Capstone.Models.Tour;
    
     var baseTourProviderPrice = currentSelectedTourInstance?.BasePrice ?? 0;
-    // Pwede ring gamitin ang InvariantCulture para siguradong comma ang lalabas na separator
     var formattedBasePrice = baseTourProviderPrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
 }
 <!DOCTYPE html>
@@ -57,11 +56,17 @@
         <h1 class="heading-xl" style="margin-bottom: 8px;">Passenger Details</h1>
         <p class="body-text" style="color: var(--text-muted); margin-bottom: 32px;">Provide details for the manifest structure setup for <strong>@currentSelectedTourInstance?.TourName</strong>.</p>
 
+        @if (ViewBag.Error != null)
+        {
+            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 16px; border-radius: 6px; margin-bottom: 24px; color: #f87171;">
+                @ViewBag.Error
+            </div>
+        }
+
         <form action="/Booking/SubmitBooking" method="post" id="main-billing-manifest-form">
             <input type="hidden" name="tourId" value="@currentSelectedTourInstance?.Id" />
             <input type="hidden" name="totalAmount" id="hidden-total-field" value="@baseTourProviderPrice" />
             <input type="hidden" name="companionNames" id="hidden-companions-field" value="" />
-
             <input type="hidden" name="slots" id="slots-pure" value="1">
 
             <div class="form-panel">
@@ -83,12 +88,10 @@
                         <label class="label-text">Mobile Number</label>
                         <input type="tel" name="leadPhone" class="input-field" placeholder="09XX XXX XXXX" required>
                     </div>
-                    
                     <div>
                         <label class="label-text">Number of Slots Requested (Pax)</label>
                         <input type="text" id="slots-masked" class="input-field" value="1" required style="text-align: left;">
                     </div>
-
                     <div>
                         <label class="label-text">Special Category (Applies to Lead Passenger)</label>
                         <select name="specialCategory" id="lead-category" class="input-field" onchange="runSubtotalRecomputationEngine()">

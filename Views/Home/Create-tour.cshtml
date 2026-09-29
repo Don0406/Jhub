@@ -140,7 +140,7 @@
         @@keyframes spin { 
             to { transform: rotate(360deg); } 
         }
-
+        
         @@media (max-width: 768px) {
             .dashboard-layout {
                 grid-template-columns: 1fr;
@@ -180,9 +180,9 @@
             <form method="POST" action="/Tour/Create" enctype="multipart/form-data" onsubmit="cleanCapacityBeforeSubmit()">
                 
                 <div class="form-panel" style="border: 1px solid var(--accent-blue); background-color: rgba(59, 130, 246, 0.02);">
-                    <h3 style="margin-top: 0; margin-bottom: 4px; color: var(--accent-blue); font-size: 16px;">1. AI Prescriptive Generation Engine</h3>
+                    <h3 style="margin-top: 0; margin-bottom: 4px; color: var(--accent-blue); font-size: 16px;">1. Prescriptive Generation Engine</h3>
                     <p class="body-text" style="color: var(--text-muted); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-                        Mag-type ng itinerary o destinasyon sa baba. Kapag nagka-error ang AI, awtomatiko itong gagamit ng fallback data para hindi maabala ang paggawa mo.
+                        Mag-type ng itinerary o destinasyon sa baba.
                     </p>
                     <div class="form-grid" style="margin-top: 0;">
                         <div>
@@ -206,7 +206,7 @@
                         </div>
                         <div class="full-width" style="text-align: right;">
                             <button type="button" id="generate-engine-btn" class="btn btn-primary" style="padding: 10px 24px;" onclick="runGenerationAlgorithm()">
-                                Run AI Auto-Generate Form
+                                Run Auto-Generate Form
                             </button>
                         </div>
                     </div>
@@ -449,7 +449,7 @@
             const capField = document.getElementById('totalCapacityField');
             capField.value = tourData.TotalCapacity || capacityInput || "14";
             formatCapacityInput(capField);
-
+            
             const visualInput = document.getElementById('basePriceVisual');
             const actualInput = document.getElementById('basePriceActual');
             const price = tourData.BasePrice || 4500.00;
@@ -464,9 +464,9 @@
             }
 
             btn.disabled = false;
-            btn.innerText = "Run AI Auto-Generate Form";
+            btn.innerText = "Run Auto-Generate Form";
         }
-
+        
         function addVendorRow() {
             const template = document.getElementById('vendor-row-template');
             const clone = template.content.cloneNode(true);

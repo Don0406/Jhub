@@ -3,21 +3,23 @@
 @{
     Layout = null;
     
-    // Kunin ang tour instance mula sa ViewBag.Tour o Model
     var currentSelectedTourInstance = ViewBag.Tour as _UPDATED__FrontEnd_Capstone.Models.Tour;
     
     var finalReferenceNumber = ViewBag.ReferenceNumber as string ?? "JH-XXXXX";
     var finalTourTitleName = ViewBag.TourName as string ?? (currentSelectedTourInstance != null ? currentSelectedTourInstance.TourName : (Model != null ? Model.TourName : "Tour Package Selection"));
     
-    // Direktang kunin ang BasePrice mula sa Model o ViewBag.Tour
-    decimal displayBasePrice = 0;
-    if (currentSelectedTourInstance != null)
+    decimal displayTotalAmount = 0;
+    if (ViewBag.TotalAmount != null)
     {
-        displayBasePrice = currentSelectedTourInstance.BasePrice;
+        displayTotalAmount = Convert.ToDecimal(ViewBag.TotalAmount);
+    }
+    else if (currentSelectedTourInstance != null)
+    {
+        displayTotalAmount = currentSelectedTourInstance.BasePrice;
     }
     else if (Model != null)
     {
-        displayBasePrice = Model.BasePrice;
+        displayTotalAmount = Model.BasePrice;
     }
 }
 <!DOCTYPE html>
@@ -172,7 +174,7 @@
                 </div>
                 <div style="grid-column: span 2;">
                     <p class="label-text">TOTAL AMOUNT</p>
-                    <p class="body-text" style="font-weight: 700; color: var(--accent-blue); font-size: 20px;">₱@displayBasePrice.ToString("N2", CultureInfo.InvariantCulture)</p>
+                    <p class="body-text" style="font-weight: 700; color: var(--accent-blue); font-size: 20px;">₱@displayTotalAmount.ToString("N2", CultureInfo.InvariantCulture)</p>
                 </div>
             </div>
             

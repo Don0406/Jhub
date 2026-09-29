@@ -65,6 +65,9 @@ public class Tour
     public bool IsCancelled { get; set; } = false;
     
     public DateTime? CancelledAt { get; set; }
+
+    public bool IsComplete { get; set; } = false;
+    public DateTime? CompletedAt { get; set; }
     
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     

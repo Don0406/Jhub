@@ -54,7 +54,15 @@
         <main class="main-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h1 class="heading-xl">Archived Tours</h1>
-                <a href="/Tour/Management" class="btn btn-secondary">← Back to Tour Management</a>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    @if (Model != null && Model.Any())
+                    {
+                        <form method="POST" action="/Tour/DeleteAllArchivedTours" style="margin: 0;" onsubmit="return confirm('Are you sure you want to permanently delete ALL archived tours? This action cannot be undone.');">
+                            <button type="submit" class="btn" style="background-color: var(--status-nogo); color: white;">Delete All</button>
+                        </form>
+                    }
+                    <a href="/Tour/Management" class="btn btn-secondary">← Back to Tour Management</a>
+                </div>
             </div>
 
             <table class="data-table">

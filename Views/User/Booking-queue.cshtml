@@ -28,11 +28,13 @@
         .btn-view { background-color: var(--accent-blue); color: white; }
         .btn-approve { background-color: var(--status-go); color: white; }
         .btn-reject { background-color: var(--status-nogo); color: white; }
-        .btn-delete { background-color: #64748b; color: white; }
+        .btn-complete { background-color: var(--status-go); color: white; }
         .btn-history { background-color: #334155; color: white; }
-        .btn-history:hover { background-color: #475569; }
+        .btn-refund { background-color: #8b5cf6; color: white; }
+        .btn-history:hover, .btn-refund:hover { opacity: 0.9; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
         .modal-card { background: var(--bg-secondary); padding: 24px; border-radius: 12px; width: 500px; max-height: 80vh; overflow-y: auto; }
+        .form-control { width: 100%; background-color: var(--bg-primary); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 6px; margin-top: 6px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -51,55 +53,69 @@
                 <a href="/Home/Login" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
             </nav>
         </aside>
-
+     
         <main class="main-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h1 class="heading-xl">Pending Bookings</h1>
-                <a href="/User/BookingHistory" class="btn btn-history">View Booking History →</a>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/Refund/RedirectToRefunds" class="btn btn-refund">Refund Requests</a>
+                    <a href="/User/BookingHistory" class="btn btn-history">View Booking History →</a>
+                </div>
             </div>
 
+            <!-- PENDING TABLE -->
             <table class="data-table">
-                <thead><tr><th class="label-text">NAME</th><th class="label-text">SLOTS</th><th class="label-text">REF #</th><th class="label-text">ACTIONS</th></tr></thead>
+                <thead><tr><th class="label-text">NAME</th><th class="label-text">TOUR / SLOTS</th><th class="label-text">REF #</th><th class="label-text">ACTIONS</th></tr></thead>
                 <tbody>
-                    @foreach (var b in Model.Where(x => x.Status == "Pending Validation")) {
-                        <tr>
-                            <td class="heading-md">@b.LeadName</td>
-                            <td class="body-text">@b.Slots</td>
-                            <td class="body-text">@b.ReferenceNumber</td>
-                            <td style="display: flex; gap: 8px;">
-                                <button class="btn btn-view" 
-                                onclick="openDetails('@b.LeadName', '@b.ReferenceNumber', '@b.LeadEmail', '@b.LeadPhone', '@b.LeadAge', '@b.CompanionNames', '@b.TotalAmount', '@b.ProofOfPaymentUrl', '@b.Tour?.TourName')">
-                                View Details
-                                </button>
-                                <button class="btn btn-approve" onclick="processBooking(@b.Id, 'Approve')">Approve</button>
-                                <button class="btn btn-reject" onclick="processBooking(@b.Id, 'Reject')">Reject</button>
-                            </td>
-                        </tr>
+                    @if (Model != null)
+                    {
+                        @foreach (var b in Model.Where(x => x.Status == "Pending Validation")) {
+                            <tr>
+                                <td class="heading-md">@b.LeadName</td>
+                                <td class="body-text">
+                                    <div>@(b.Tour?.TourName ?? "N/A")</div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">Slots: @b.Slots (Filled: @(b.Tour?.SlotsFilled ?? 0)/@(b.Tour?.TotalCapacity ?? 0))</div>
+                                </td>
+                                <td class="body-text">@b.ReferenceNumber</td>
+                                <td style="display: flex; gap: 8px; align-items: center;">
+                                    <button class="btn btn-view" onclick="openDetails('@b.LeadName', '@b.ReferenceNumber', '@b.LeadEmail', '@b.LeadPhone', '@b.LeadAge', '@b.CompanionNames', '@b.TotalAmount', '@b.ProofOfPaymentUrl', '@b.Tour?.TourName')">View Details</button>
+                                    <button class="btn btn-approve" onclick="processBooking(@b.Id, 'Approve')">Approve</button>
+                                    <button class="btn btn-refund" onclick="openRefundModal(@b.Id, '@b.LeadName', 'Pending Refund / Rejection')">Refund / Reject</button>
+                                    <button class="btn btn-reject" onclick="processBooking(@b.Id, 'Reject')">Reject</button>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
 
+            <!-- APPROVED TABLE -->
             <h1 class="heading-xl" style="margin-bottom: 24px;">Approved Bookings</h1>
             <table class="data-table">
                 <thead><tr><th class="label-text">NAME</th><th class="label-text">TOUR</th><th class="label-text">SLOTS</th><th class="label-text">REF #</th><th class="label-text">ACTIONS</th></tr></thead>
                 <tbody>
-                    @foreach (var b in Model.Where(x => x.Status == "Validated")) {
-                        <tr>
-                            <td class="heading-md">@b.LeadName</td>
-                            <td class="body-text">@b.Tour?.TourName</td>
-                            <td class="body-text">@b.Slots</td>
-                            <td class="body-text">@b.ReferenceNumber</td>
-                            <td style="display: flex; gap: 8px;">
-                                <button class="btn btn-view" onclick="openDetails('@b.LeadName', '@b.ReferenceNumber', '@b.LeadEmail', '@b.LeadPhone', '@b.LeadAge', '@b.CompanionNames', '@b.TotalAmount', '@b.ProofOfPaymentUrl', '@b.Tour?.TourName')">View Details</button>
-                                <button class="btn btn-delete" onclick="processBooking(@b.Id, 'Reject')">Delete</button>
-                            </td>
-                        </tr>
+                    @if (Model != null)
+                    {
+                        @foreach (var b in Model.Where(x => x.Status == "Approved")) {
+                            <tr>
+                                <td class="heading-md">@b.LeadName</td>
+                                <td class="body-text">@b.Tour?.TourName</td>
+                                <td class="body-text">@b.Slots</td>
+                                <td class="body-text">@b.ReferenceNumber</td>
+                                <td style="display: flex; gap: 8px; align-items: center;">
+                                    <button class="btn btn-view" onclick="openDetails('@b.LeadName', '@b.ReferenceNumber', '@b.LeadEmail', '@b.LeadPhone', '@b.LeadAge', '@b.CompanionNames', '@b.TotalAmount', '@b.ProofOfPaymentUrl', '@b.Tour?.TourName')">View Details</button>
+                                    <button class="btn btn-refund" onclick="openRefundModal(@b.Id, '@b.LeadName', 'Approved Refund / Validated')">Refund</button>
+                                    <button class="btn btn-complete" onclick="completeTourBooking(@b.Id)">Complete Tour</button>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
         </main>
     </div>
 
+    <!-- DETAILS MODAL -->
     <div id="details-modal" class="modal-overlay">
         <div class="modal-card">
             <h2 id="m-name" class="heading-xl" style="margin-bottom: 16px;"></h2>
@@ -112,6 +128,33 @@
             <p class="body-text"><strong>Total Amount:</strong> ₱<span id="m-amount"></span></p>
             <p class="body-text" style="margin-top: 10px;"><strong>Proof:</strong> <a id="m-proof" target="_blank" style="color:var(--accent-blue)"></a></p>
             <button class="btn" style="background:#475569; color:white; margin-top: 20px; width: 100%;" onclick="document.getElementById('details-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- UNIFIED REFUND MODAL -->
+    <div id="refund-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="heading-xl" style="font-size: 20px; margin-bottom: 12px;">Process Refund Request</h2>
+            <p class="body-text" id="refund-modal-name" style="margin-bottom: 14px; color: var(--text-muted);"></p>
+            
+            <form id="refundForm" onsubmit="submitRefund(event)">
+                <input type="hidden" id="refund-booking-id" name="bookingId" />
+                
+                <div style="margin-bottom: 14px;">
+                    <label class="label-text">REFUND MESSAGE / REASON</label>
+                    <textarea id="refund-reason" name="refundReason" rows="3" class="form-control" placeholder="e.g. Tour is full / Guest requested cancellation" required></textarea>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="label-text">UPLOAD PAYMENT / REFUND RECEIPT</label>
+                    <input type="file" id="payment-receipt" name="paymentReceipt" class="form-control" accept="image/*,application/pdf" />
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button type="submit" class="btn btn-refund" style="flex: 1;">Submit Refund</button>
+                    <button type="button" class="btn" style="background: #475569; color: white;" onclick="document.getElementById('refund-modal').style.display='none'">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -142,9 +185,38 @@
             document.getElementById('details-modal').style.display = 'flex';
         }
 
+        function openRefundModal(bookingId, leadName, defaultReason) {
+            document.getElementById('refund-booking-id').value = bookingId;
+            document.getElementById('refund-modal-name').innerText = "Joiner: " + leadName;
+            document.getElementById('refund-reason').value = defaultReason || "";
+            document.getElementById('payment-receipt').value = "";
+            document.getElementById('refund-modal').style.display = 'flex';
+        }
+
+        function submitRefund(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('refundForm'));
+
+            fetch('/Refund/RequestRefundFromQueue', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || "Failed to process refund.");
+                }
+            })
+            .catch(err => alert("System error occurred."));
+        }
+
         function processBooking(id, action) {
             if(confirm('Are you sure you want to ' + action + ' this booking?')) {
-                fetch('/User/' + (action == 'Approve' ? 'ApproveBooking' : 'RejectBooking'), {
+                let endpoint = (action == 'Approve') ? '/User/ApproveBooking' : '/User/RejectBooking';
+                
+                fetch(endpoint, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: 'id=' + id
@@ -158,6 +230,28 @@
                     }
                 })
                 .catch(err => alert("System error."));
+            }
+        }
+
+        function completeTourBooking(id) {
+            if(confirm('Markahan ba bilang tapos na ang tour ng pasaherong ito? Lilipat ito sa Booking History.')) {
+                fetch('/Tour/CompleteTourBooking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'id=' + id
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        location.reload(); 
+                    } else {
+                        alert(data.message || "Failed to complete tour.");
+                    }
+                })
+                .catch(err => {
+                    alert("System error occurred.");
+                    console.error(err);
+                });
             }
         }
     </script>

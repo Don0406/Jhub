@@ -2,13 +2,13 @@
 @{
     Layout = null;
     
-    // Automatic threshold calculator para sa operational indicator status bar mula sa database
     int slotsFilled = ViewBag.DynamicSlotsFilled ?? 0;
     int totalCapacity = Model.Tour?.TotalCapacity ?? 1;
     
     int progressPercent = (int)Math.Round(((double)slotsFilled / totalCapacity) * 100);
     if (progressPercent > 100) progressPercent = 100;
-}<!DOCTYPE html>
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -25,6 +25,7 @@
             --accent-blue: #3b82f6;
             --status-go: #22c55e;
             --status-watch: #eab308;
+            --status-danger: #ef4444;
         }
 
         body {
@@ -108,6 +109,29 @@
         .heading-md { font-size: 18px; font-weight: 600; margin: 0; }
         .body-text { font-size: 15px; margin: 0; }
         .body-sm { font-size: 13px; margin: 0; }
+        
+        .btn {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+        .btn-success { background-color: var(--status-go); color: white; }
+        .btn-success:hover { background-color: #16a34a; }
+        .btn-danger { background-color: var(--status-danger); color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+        
+        .label-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -117,55 +141,136 @@
         <h2 id="status-ref-number" class="heading-md">Booking #@Model.ReferenceNumber</h2>
     </nav>
 
+    @if (TempData["Message"] != null || ViewBag.Message != null)
+    {
+        <div style="max-width: 1440px; margin: 20px auto 0 auto; padding: 0 40px;">
+            <div style="background-color: rgba(34, 197, 94, 0.15); border: 1px solid var(--status-go); color: var(--status-go); padding: 12px 16px; border-radius: 6px; font-size: 14px;">
+                @(TempData["Message"] ?? ViewBag.Message)
+            </div>
+        </div>
+    }
+
     <main class="detail-layout">
         
-        <div class="panel">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-                <div>
-                    <h1 id="status-tour-name" class="heading-xl">@(Model.Tour?.TourName ?? Model.Tour?.Destination ?? "Scheduled Tour")</h1>
-                    <p id="status-date" class="body-text" style="color: var(--text-muted); margin-top: 8px;">
-                        📍 Destination: @(Model.Tour?.Destination ?? "TBD") • 📅 Departure: @(Model.Tour?.DepartureDate.ToString("MMM dd, yyyy") ?? "Not Set")
-                    </p>
+        <!-- Left Column: Details & Refund Request -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <div class="panel">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                    <div>
+                        <h1 id="status-tour-name" class="heading-xl">@(Model.Tour?.TourName ?? Model.Tour?.Destination ?? "Scheduled Tour")</h1>
+                        <p id="status-date" class="body-text" style="color: var(--text-muted); margin-top: 8px;">
+                            📍 Destination: @(Model.Tour?.Destination ?? "TBD") • 📅 Departure: @(Model.Tour?.DepartureDate.ToString("MMM dd, yyyy") ?? "Not Set")
+                        </p>
+                    </div>
+                    <span id="status-badge" class="badge" style="background-color: @(Model.Status == "Validated" || Model.Status == "Confirmed" ? "rgba(34, 197, 94, 0.2)" : "rgba(234, 179, 8, 0.2)"); color: @(Model.Status == "Validated" || Model.Status == "Confirmed" ? "var(--status-go)" : "var(--status-watch)"); padding: 8px 16px;">
+                        @Model.Status
+                    </span>
                 </div>
-                <span id="status-badge" class="badge" style="background-color: @(Model.Status == "Validated" || Model.Status == "Confirmed" ? "rgba(34, 197, 94, 0.2)" : "rgba(234, 179, 8, 0.2)"); color: @(Model.Status == "Validated" || Model.Status == "Confirmed" ? "var(--status-go)" : "var(--status-watch)"); padding: 8px 16px;">
-                    @Model.Status
-                </span>
+
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                    <h3 class="heading-md" style="margin-bottom: 12px;">Lead Guest Information</h3>
+                    <p class="body-text"><strong>Name:</strong> @Model.LeadName (@Model.LeadAge yrs old)</p>
+                    <p class="body-text" style="margin-top: 6px;"><strong>Phone:</strong> @Model.LeadPhone • <strong>Category:</strong> @Model.SpecialCategory</p>
+                    @if (!string.IsNullOrEmpty(Model.CompanionNames))
+                    {
+                        <p class="body-text" style="margin-top: 6px;"><strong>Companions:</strong> @Model.CompanionNames</p>
+                    }
+                </div>
+
+                <h3 class="heading-md" style="margin-top: 32px; margin-bottom: 16px;">Payment History</h3>
+                <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span class="body-text">Total Amount</span>
+                        <span id="status-amount" class="body-text" style="font-weight: 700; color: var(--status-go);">₱@(Model.TotalAmount.ToString("N2", System.Globalization.CultureInfo.InvariantCulture))</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                        <span class="body-sm">Booking Date Registered</span>
+                        <span class="body-sm">@Model.BookingDate.ToString("MMMM dd, yyyy hh:mm tt")</span>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
-                <h3 class="heading-md" style="margin-bottom: 12px;">Lead Guest Information</h3>
-                <p class="body-text"><strong>Name:</strong> @Model.LeadName (@Model.LeadAge yrs old)</p>
-                <p class="body-text" style="margin-top: 6px;"><strong>Phone:</strong> @Model.LeadPhone • <strong>Category:</strong> @Model.SpecialCategory</p>
-                @if (!string.IsNullOrEmpty(Model.CompanionNames))
+            <!-- REQUEST REFUND SECTION (Nakaturo na sa RefundController) -->
+            <div class="panel">
+                <h3 class="heading-md" style="margin-bottom: 12px; color: var(--status-danger);">Request / Follow-up Refund</h3>
+                <p class="body-sm" style="color: var(--text-muted); margin-bottom: 16px;">Maaari kang magpadala ng bagong mensahe o mag-update ng detalye para sa iyong refund.</p>
+                
+                <form action="/Refund/SubmitRefundRequest" method="post">
+                    <input type="hidden" name="bookingId" value="@Model.Id" />
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label class="label-text">REASON FOR REFUND</label>
+                        <select id="refundReasonSelect" name="refundReason" required onchange="toggleOtherReason(this)" style="width: 100%; background-color: var(--bg-primary); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 6px; font-size: 14px;">
+                            <option value="" disabled selected>Select a reason...</option>
+                            <option value="Personal / Medical Emergency">Personal / Medical Emergency</option>
+                            <option value="Change of Plans">Change of Plans</option>
+                            <option value="Tour Rescheduled / Cancelled">Tour Rescheduled / Cancelled</option>
+                            <option value="Duplicate Payment">Duplicate Payment</option>
+                            <option value="Other">Other (Please specify)</option>
+                        </select>
+                    </div>
+
+                    <div id="otherReasonContainer" style="margin-bottom: 12px; display: none;">
+                        <label class="label-text">SPECIFY OTHER REASON</label>
+                        <input type="text" id="otherReasonInput" placeholder="Please specify your reason..." style="width: 100%; background-color: var(--bg-primary); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 6px; font-size: 14px; box-sizing: border-box;" />
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label class="label-text">PAYOUT CHANNEL (E-wallet details - ex: Gcash number / Bank Account number or details)</label>
+                        <input type="text" name="payoutChannel" value="@Model.RefundPayoutChannel" placeholder="e.g., GCash - 09123456789" required style="width: 100%; background-color: var(--bg-primary); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 6px; font-size: 14px; box-sizing: border-box;" />
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label class="label-text">ADDITIONAL NOTES / REMARKS</label>
+                        <textarea name="notes" rows="2" placeholder="Mag-add ng bagong mensahe o tanong dito..." style="width: 100%; background-color: var(--bg-primary); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 6px; font-size: 14px; box-sizing: border-box; resize: vertical;">@Model.RefundNotes</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">Send Refund Request / Message</button>
+                </form>
+
+                @if (!string.IsNullOrEmpty(Model.RefundStatus))
                 {
-                    <p class="body-text" style="margin-top: 6px;"><strong>Companions:</strong> @Model.CompanionNames</p>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                        <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 16px;">
+                            <p class="body-sm" style="color: var(--status-watch); font-weight: 700; margin-bottom: 6px;">Current Status: @Model.RefundStatus</p>
+                            <p class="body-sm" style="color: var(--text-muted); margin-bottom: 4px;"><strong>Latest Reason:</strong> @Model.RefundReason</p>
+                            <p class="body-sm" style="color: var(--text-muted);"><strong>Payout Channel:</strong> @Model.RefundPayoutChannel</p>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.RefundOperatorMessage) || !string.IsNullOrEmpty(Model.RefundProofPath))
+                        {
+                            <div style="background-color: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent-blue); padding: 16px; border-radius: 6px;">
+                                <h4 class="heading-md" style="font-size: 15px; margin-bottom: 8px; color: var(--accent-blue);">Operator Refund Response</h4>
+                                @if (!string.IsNullOrEmpty(Model.RefundOperatorMessage))
+                                {
+                                    <p class="body-sm" style="margin-bottom: 8px;"><strong>Message:</strong> @Model.RefundOperatorMessage</p>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.RefundProofPath))
+                                {
+                                    <p class="body-sm"><strong>Refund Proof / Screenshot:</strong> <a href="@Model.RefundProofPath" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">View Receipt</a></p>
+                                }
+                            </div>
+                        }
+                    </div>
                 }
             </div>
 
-            <h3 class="heading-md" style="margin-top: 32px; margin-bottom: 16px;">Payment History</h3>
-            <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span class="body-text">Total Amount</span>
-                    <span id="status-amount" class="body-text" style="font-weight: 700; color: var(--status-go);">₱@Model.TotalAmount.ToString("N2")</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
-                    <span class="body-sm">Booking Date Registered</span>
-                    <span class="body-sm">@Model.BookingDate.ToString("MMMM dd, yyyy hh:mm tt")</span>
-                </div>
-            </div>
         </div>
 
-        <div>
-            <div class="panel" style="margin-bottom: 24px;">
+        <!-- Right Column -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <div class="panel">
                 <h3 class="heading-md" style="margin-bottom: 8px;">Tour Activation Status</h3>
                 <p class="body-sm" style="color: var(--text-muted);">Tour utilization is currently at @progressPercent% capacity.</p>
-               <div class="progress-bar-container">
-    <div class="progress-fill" style="width: @(progressPercent)%"></div>
-</div>
-<div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px;">
-    <span>@slotsFilled / @totalCapacity Slots Filled</span>
-    <span>@(progressPercent >= 75 ? "Core Target Met 🚀" : "Heuristic Target Pending")</span>
-</div>
+                <div class="progress-bar-container">
+                    <div class="progress-fill" style="width: @(progressPercent)%"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px;">
+                    <span>@slotsFilled / @totalCapacity Slots Filled</span>
+                    <span>@(progressPercent >= 75 ? "Core Target Met 🚀" : "Heuristic Target Pending")</span>
+                </div>
             </div>
 
             <div class="panel">
@@ -194,12 +299,42 @@
                         </div>
                     }
                 </div>
-
-                
             </div>
+
+            <div class="panel">
+                <h3 class="heading-md" style="margin-bottom: 12px;">Upload Proof of Payment</h3>
+                <p class="body-sm" style="color: var(--text-muted); margin-bottom: 16px;">Mag-upload ng resibo o screenshot ng bayad kung kinakailangan i-update.</p>
+                
+                <form action="/Booking/UploadConfirmationPoP" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="bookingId" value="@Model.Id" />
+                    <div style="margin-bottom: 14px;">
+                        <input type="file" name="popFile" accept="image/*" required style="width: 100%; color: var(--text-muted); font-size: 13px;" />
+                    </div>
+                    <button type="submit" class="btn btn-success">Upload & Submit Proof</button>
+                </form>
+            </div>
+
         </div>
 
     </main>
 
+    <script>
+        function toggleOtherReason(selectEl) {
+            const container = document.getElementById('otherReasonContainer');
+            const inputEl = document.getElementById('otherReasonInput');
+            
+            if (selectEl.value === 'Other') {
+                container.style.display = 'block';
+                inputEl.setAttribute('required', 'required');
+                inputEl.setAttribute('name', 'refundReason'); 
+                selectEl.removeAttribute('name'); 
+            } else {
+                container.style.display = 'none';
+                inputEl.removeAttribute('required');
+                inputEl.removeAttribute('name');
+                selectEl.setAttribute('name', 'refundReason');
+            }
+        }
+    </script>
 </body>
 </html>

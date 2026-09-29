@@ -1,6 +1,9 @@
 @model IEnumerable<_UPDATED__FrontEnd_Capstone.Models.Tour>
 @using System.Text.Encodings.Web
-@{ Layout = null; }
+@{ 
+    Layout = null; 
+    var vendorPayablesMap = ViewBag.VendorPayablesMap as Dictionary<int, decimal> ?? new Dictionary<int, decimal>();
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,87 +81,89 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var t in Model) {
-                        // Serialize Vendors
-                        var explicitVendorList = new List<object>();
-                        if (t.Vendor != null) {
-                            explicitVendorList.Add(new { name = t.Vendor.VendorName ?? "Unnamed", service = t.Vendor.ServiceType ?? "N/A", contact = t.Vendor.ContactInfo ?? "N/A", terms = t.Vendor.PaymentTerms ?? "N/A" });
-                        }
-                        string serializedVendors = System.Text.Json.JsonSerializer.Serialize(explicitVendorList);
-                        string base64Vendors = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(serializedVendors));
+                    @if (Model != null) {
+                        foreach (var t in Model) {
+                            decimal operationalCost = vendorPayablesMap.ContainsKey(t.Id) ? vendorPayablesMap[t.Id] : t.OperationalCost;
 
-                        // Serialize Bookings
-                        var explicitBookingList = new List<object>();
-                        if (t.Bookings != null) {
-                            foreach (var b in t.Bookings) {
-                                explicitBookingList.Add(new {
-                                    leadName = b.LeadName ?? "Unknown Lead",
-                                    leadEmail = b.LeadEmail ?? "N/A",
-                                    companionNames = b.CompanionNames ?? "None",
-                                    slots = b.Slots,
-                                    totalAmount = b.TotalAmount.ToString("N2", System.Globalization.CultureInfo.InvariantCulture),
-                                    status = b.Status
-                                });
+                            var explicitVendorList = new List<object>();
+                            if (t.Vendor != null) {
+                                explicitVendorList.Add(new { name = t.Vendor.VendorName ?? "Unnamed", service = t.Vendor.ServiceType ?? "N/A", contact = t.Vendor.ContactInfo ?? "N/A", terms = t.Vendor.PaymentTerms ?? "N/A" });
                             }
-                        }
-                        string serializedBookings = System.Text.Json.JsonSerializer.Serialize(explicitBookingList);
-                        string base64Bookings = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(serializedBookings));
+                            string serializedVendors = System.Text.Json.JsonSerializer.Serialize(explicitVendorList);
+                            string base64Vendors = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(serializedVendors));
 
-                        <tr>
-                            <td class="heading-md">
-                                @t.TourName
-                                @if (t.IsBoosted) {
-                                    <span class="badge badge-boosted">⭐ BOOSTED</span>
+                            var explicitBookingList = new List<object>();
+                            if (t.Bookings != null) {
+                                foreach (var b in t.Bookings) {
+                                    explicitBookingList.Add(new {
+                                        leadName = b.LeadName ?? "Unknown Lead",
+                                        leadEmail = b.LeadEmail ?? "N/A",
+                                        companionNames = b.CompanionNames ?? "None",
+                                        slots = b.Slots,
+                                        totalAmount = b.TotalAmount.ToString("N2", System.Globalization.CultureInfo.InvariantCulture),
+                                        status = b.Status
+                                    });
                                 }
-                            </td>
-                            <td class="body-text">@t.Destination</td>
-                            <td class="body-text">@t.DepartureDate.ToString("MMM dd") - @t.ReturnDate.ToString("MMM dd")</td>
-                            <td class="body-text">₱@t.BasePrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)</td>
-                            <td><span class="badge bg-active">@t.Status</span></td>
-                            <td>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <button class="btn btn-info" style="padding: 6px 12px; font-size: 12px;" onclick="openDetailsModal(
-                                        '@JavaScriptEncoder.Default.Encode(t.TourName)', 
-                                        '@JavaScriptEncoder.Default.Encode(t.Destination)', 
-                                        '@t.DepartureDate.ToString("MMMM dd, yyyy hh:mm tt")', 
-                                        '@t.ReturnDate.ToString("MMMM dd, yyyy hh:mm tt")', 
-                                        '₱@t.BasePrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
-                                        '₱@t.OperationalCost.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
-                                        '@t.SlotsFilled / @t.TotalCapacity', 
-                                        '@t.MinParticipants', 
-                                        '@t.Deadline.ToString("MMMM dd, yyyy")', 
-                                        '@JavaScriptEncoder.Default.Encode(t.Status)', 
-                                        '@JavaScriptEncoder.Default.Encode(t.ItineraryHighlights ?? "No highlights specified.")', 
-                                        '@base64Vendors',
-                                        '@base64Bookings'
-                                    )">View</button>
-                                    
-                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="openEditModal('@t.Id', '@JavaScriptEncoder.Default.Encode(t.TourName)', '@JavaScriptEncoder.Default.Encode(t.Destination)', '@t.DepartureDate.ToString("yyyy-MM-ddTHH:mm")', '@t.ReturnDate.ToString("yyyy-MM-ddTHH:mm")', '@t.BasePrice', '@t.TotalCapacity', '@t.Status', '@JavaScriptEncoder.Default.Encode(t.ItineraryHighlights ?? "")')">Edit</button>
-                                    
-                                    <!-- Boost Button -->
-                                    <form method="POST" action="/Tour/ToggleBoost" style="margin: 0;">
-                                        <input type="hidden" name="id" value="@t.Id" />
-                                        @if (t.IsBoosted) {
-                                            <button type="submit" class="btn btn-boosted" style="padding: 6px 12px; font-size: 12px;" title="Unboost this tour">⭐ Unboost</button>
-                                        } else {
-                                            <button type="submit" class="btn btn-boost" style="padding: 6px 12px; font-size: 12px;" title="Boost this tour">☆ Boost</button>
-                                        }
-                                    </form>
+                            }
+                            string serializedBookings = System.Text.Json.JsonSerializer.Serialize(explicitBookingList);
+                            string base64Bookings = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(serializedBookings));
 
-                                    <!-- Cancel Button -->
-                                    <form method="POST" action="/Tour/CancelTour" style="margin: 0;" onsubmit="return confirm('Are you sure you want to cancel this tour?');">
-                                        <input type="hidden" name="id" value="@t.Id" />
-                                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">Cancel Tour</button>
-                                    </form>
+                            <tr>
+                                <td class="heading-md">
+                                    @t.TourName
+                                    @if (t.IsBoosted) {
+                                        <span class="badge badge-boosted">⭐ BOOSTED</span>
+                                    }
+                                </td>
+                                <td class="body-text">@t.Destination</td>
+                                <td class="body-text">@t.DepartureDate.ToString("MMM dd") - @t.ReturnDate.ToString("MMM dd")</td>
+                                <td class="body-text">₱@t.BasePrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)</td>
+                                <td><span class="badge bg-active">@t.Status</span></td>
+                                <td>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <button class="btn btn-info" style="padding: 6px 12px; font-size: 12px;" onclick="openDetailsModal(
+                                            '@JavaScriptEncoder.Default.Encode(t.TourName)', 
+                                            '@JavaScriptEncoder.Default.Encode(t.Destination)', 
+                                            '@t.DepartureDate.ToString("MMMM dd, yyyy hh:mm tt")', 
+                                            '@t.ReturnDate.ToString("MMMM dd, yyyy hh:mm tt")', 
+                                            '₱@t.BasePrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
+                                            '₱@operationalCost.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
+                                            '@t.SlotsFilled / @t.TotalCapacity', 
+                                            '@t.MinParticipants', 
+                                            '@t.Deadline.ToString("MMMM dd, yyyy")', 
+                                            '@JavaScriptEncoder.Default.Encode(t.Status)', 
+                                            '@JavaScriptEncoder.Default.Encode(t.ItineraryHighlights ?? "No highlights specified.")', 
+                                            '@base64Vendors',
+                                            '@base64Bookings'
+                                        )">View</button>
+                                        
+                                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="openEditModal('@t.Id', '@JavaScriptEncoder.Default.Encode(t.TourName)', '@JavaScriptEncoder.Default.Encode(t.Destination)', '@t.DepartureDate.ToString("yyyy-MM-ddTHH:mm")', '@t.ReturnDate.ToString("yyyy-MM-ddTHH:mm")', '@t.BasePrice', '@t.TotalCapacity', '@t.Status', '@JavaScriptEncoder.Default.Encode(t.ItineraryHighlights ?? "")')">Edit</button>
+                                        
+                                        <!-- Boost Button -->
+                                        <form method="POST" action="/Tour/ToggleBoost" style="margin: 0;">
+                                            <input type="hidden" name="id" value="@t.Id" />
+                                            @if (t.IsBoosted) {
+                                                <button type="submit" class="btn btn-boosted" style="padding: 6px 12px; font-size: 12px;" title="Unboost this tour">⭐ Unboost</button>
+                                            } else {
+                                                <button type="submit" class="btn btn-boost" style="padding: 6px 12px; font-size: 12px;" title="Boost this tour">☆ Boost</button>
+                                            }
+                                        </form>
 
-                                    <!-- Archive Button -->
-                                    <form method="POST" action="/Tour/ArchiveTour" style="margin: 0;" onsubmit="return confirm('Are you sure you want to archive this tour? It will be hidden from the active management list.');">
-                                        <input type="hidden" name="id" value="@t.Id" />
-                                        <button type="submit" class="btn btn-warning" style="padding: 6px 12px; font-size: 12px;">Archive</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+                                        <!-- Cancel Button -->
+                                        <form method="POST" action="/Tour/CancelTour" style="margin: 0;" onsubmit="return confirm('Are you sure you want to cancel this tour?');">
+                                            <input type="hidden" name="id" value="@t.Id" />
+                                            <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">Cancel Tour</button>
+                                        </form>
+
+                                        <!-- Mark as Complete Button -->
+                                        <form method="POST" action="/Tour/MarkAsComplete" style="margin: 0;" onsubmit="return confirm('Are you sure you want to mark this tour as complete?');">
+                                            <input type="hidden" name="id" value="@t.Id" />
+                                            <button type="submit" class="btn btn-warning" style="padding: 6px 12px; font-size: 12px;">Mark as Complete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -277,7 +282,6 @@
             document.getElementById('view-status').innerText = decodeURIComponent(status);
             document.getElementById('view-itin-highlights').innerText = decodeURIComponent(itin);
             
-            // --- Parse Vendors ---
             const container = document.getElementById('view-vendors-container');
             container.innerHTML = '';
             try {
@@ -308,7 +312,6 @@
                 container.innerHTML = '<div class="body-text" style="color: var(--status-nogo);">Failed to parse vendor data.</div>';
             }
 
-            // --- Parse Bookings ---
             const bookingContainer = document.getElementById('view-bookings-container');
             bookingContainer.innerHTML = '';
             try {
