@@ -21,7 +21,6 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'c64c716e-f453-11f0-b744-6f4a24d5c351:1-1085';
 
 --
 -- Table structure for table `__efmigrationshistory`

@@ -1,0 +1,13 @@
+## Build and compiled outputs
+bin/
+obj/
+publish/
+
+## Visual Studio & VS Code configs
+.vscode/
+*.user
+*.suo
+
+## Sensitive / local overrides
+appsettings.Production.json
+*.env
