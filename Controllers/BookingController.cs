@@ -89,62 +89,62 @@ public async Task<IActionResult> TourDiscovery(string? search, string? landscape
     }
 
     [HttpPost]
-[Route("Booking/SubmitBooking")]
-public async Task<IActionResult> SubmitBooking(int tourId, string leadName, int leadAge, string leadEmail, string leadPhone, string specialCategory, string companionNames, int slots, decimal totalAmount)
-{
-    // 1. Kunin ang tour kasama ang mga bookings para mabilang ang slots
-    var tour = await _context.Tours
-        .Include(t => t.Bookings)
-        .FirstOrDefaultAsync(t => t.Id == tourId);
+    [Route("Booking/SubmitBooking")]
+    public async Task<IActionResult> SubmitBooking(int tourId, string leadName, int leadAge, string leadEmail, string leadPhone, string specialCategory, string companionNames, int slots, decimal totalAmount)
+    {
+        // 1. Kunin ang tour kasama ang mga bookings para mabilang ang slots
+        var tour = await _context.Tours
+            .Include(t => t.Bookings)
+            .FirstOrDefaultAsync(t => t.Id == tourId);
+            
+        if (tour == null) return NotFound();
+
+        // 2. Kalkulahin ang totoong slots na puno na (Validated status lang)
+        int actualSlotsFilled = tour.Bookings != null 
+            ? tour.Bookings.Where(b => b.Status == "Validated").Sum(b => b.Slots) 
+            : 0;
+
+        int availableSeats = tour.TotalCapacity - actualSlotsFilled;
+
+        // 3. I-block kung ang gustong i-book ay mas marami kaysa sa natitirang slots
+        if (slots > availableSeats)
+        {
+            ViewBag.Tour = tour;
+            ViewBag.Error = $"Paumanhin, ang natitirang slot na lamang para sa tour na ito ay {availableSeats}. Hindi na ma-aakomodate ang {slots} na slots.";
+            return View("Booking-form", tour);
+        }
         
-    if (tour == null) return NotFound();
+        var randomSignature = new Random().Next(10000, 99999);
+        var trackingReference = $"JH-{randomSignature}";
 
-    // 2. Kalkulahin ang totoong slots na puno na (Validated status lang)
-    int actualSlotsFilled = tour.Bookings != null 
-        ? tour.Bookings.Where(b => b.Status == "Validated").Sum(b => b.Slots) 
-        : 0;
+        var newRecord = new Booking
+        {
+            ReferenceNumber = trackingReference,
+            TourId = tourId,
+            LeadName = leadName,
+            LeadAge = leadAge,
+            LeadEmail = leadEmail,
+            LeadPhone = leadPhone,
+            SpecialCategory = specialCategory,
+            CompanionNames = companionNames,
+            Slots = slots, 
+            TotalAmount = totalAmount,
+            Status = "Pending Validation",
+            BookedAt = DateTime.Now // <--- Properly initialized BookedAt timestamp
+        };
 
-    int availableSeats = tour.TotalCapacity - actualSlotsFilled;
-
-    // 3. I-block kung ang gustong i-book ay mas marami kaysa sa natitirang slots
-    if (slots > availableSeats)
-    {
+        _context.Set<Booking>().Add(newRecord);
+        await _context.SaveChangesAsync();
+    
+        ViewBag.BookingId = newRecord.Id; 
+        ViewBag.ReferenceNumber = trackingReference;
+        ViewBag.TourName = tour.TourName;
+        ViewBag.TotalPaid = totalAmount;
+        ViewBag.TotalAmount = totalAmount; // <--- Siguraduhing maipapasa ang eksaktong total amount dito para mabasa ng confirmation view
+        
         ViewBag.Tour = tour;
-        ViewBag.Error = $"Paumanhin, ang natitirang slot na lamang para sa tour na ito ay {availableSeats}. Hindi na ma-aakomodate ang {slots} na slots.";
-        return View("Booking-form", tour);
+        return View("Booking-confirmation", tour);
     }
-    
-    var randomSignature = new Random().Next(10000, 99999);
-    var trackingReference = $"JH-{randomSignature}";
-
-    var newRecord = new Booking
-    {
-        ReferenceNumber = trackingReference,
-        TourId = tourId,
-        LeadName = leadName,
-        LeadAge = leadAge,
-        LeadEmail = leadEmail,
-        LeadPhone = leadPhone,
-        SpecialCategory = specialCategory,
-        CompanionNames = companionNames,
-        Slots = slots, 
-        TotalAmount = totalAmount,
-        Status = "Pending Validation",
-        BookedAt = DateTime.Now // <--- Properly initialized BookedAt timestamp
-    };
-
-    _context.Set<Booking>().Add(newRecord);
-    await _context.SaveChangesAsync();
-   
-    ViewBag.BookingId = newRecord.Id; 
-    ViewBag.ReferenceNumber = trackingReference;
-    ViewBag.TourName = tour.TourName;
-    ViewBag.TotalPaid = totalAmount;
-    ViewBag.TotalAmount = totalAmount; // <--- Siguraduhing maipapasa ang eksaktong total amount dito para mabasa ng confirmation view
-    
-    ViewBag.Tour = tour;
-    return View("Booking-confirmation", tour);
-}
 
 
 [HttpGet]
@@ -169,7 +169,7 @@ public async Task<IActionResult> Status(int id)
     return View("Booking-status", booking);
 }
 
-[HttpPost]
+  [HttpPost]
 [Route("Booking/UploadConfirmationPoP")]
 public async Task<IActionResult> UploadConfirmationPoP(int bookingId, IFormFile popFile)
 {
@@ -184,37 +184,32 @@ public async Task<IActionResult> UploadConfirmationPoP(int bookingId, IFormFile 
 
     if (popFile != null && popFile.Length > 0)
     {
-        // 1. Gumawa ng folder kung wala pa sa wwwroot/uploads/payments
         var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "payments");
         if (!Directory.Exists(uploadsFolder))
         {
             Directory.CreateDirectory(uploadsFolder);
         }
 
-        // 2. Gumawa ng unique filename para iwas magkabaliktad o magkapatong ang file
         var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(popFile.FileName);
         var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-        // 3. I-save ang file pisikal sa server
         using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
             await popFile.CopyToAsync(fileStream);
         }
 
-        // 4. I-save ang path sa tamang database column name mo
         booking.ProofOfPaymentUrl = "/uploads/payments/" + uniqueFileName;
         
-        // Optional: Pwede mo ring i-update ang status kung kinakailangan
-        // booking.Status = "Pending Validation"; 
-
         _context.Update(booking);
         await _context.SaveChangesAsync();
     }
 
     TempData["Message"] = "Matagumpay na na-upload ang patunay ng bayad!";
     
-    return RedirectToAction("ViewStatus", new { id = bookingId });
+    // Direktang ibinabalik sa Booking-status.cshtml kasama ang model data
+    return View("Booking-status", booking);
 }
+
 
 
     [HttpGet]
@@ -259,6 +254,7 @@ public async Task<IActionResult> TrackStatus(string referenceNumber, string emai
 
     return View("Booking-status", booking);
 }
+
 
 
 //REFUND REQUEST

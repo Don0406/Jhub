@@ -49,7 +49,7 @@ public class Booking
     public DateTime BookedAt { get; set; } = DateTime.Now;
     [Required]
     public bool IsApproved { get; set; } = false;
-    
+
     public string? RefundStatus { get; set; } // "Requested", "Approved", "Rejected"
     public string? RefundReason { get; set; }
     public string? RefundPayoutChannel { get; set; }
@@ -59,7 +59,8 @@ public class Booking
     public string? RefundOperatorMessage { get; set; }
     public string? RefundProofPath { get; set; }     
     public DateTime? RefundUpdatedAt { get; set; }
-
+    
+    public bool IsArchived { get; set; } = false;
 
     [ForeignKey("TourId")]
     public virtual Tour? Tour { get; set; }

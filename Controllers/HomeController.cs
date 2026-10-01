@@ -46,14 +46,29 @@ public class HomeController : Controller
             ViewBag.ErrorMessage = "Invalid credentials.";
             return View();
         }
+
+        // 1. Suriin kung Pending ang account
+        if (user.Status == "Pending")
+        {
+            ViewBag.ErrorMessage = "Wait for admin approval. Try logging in later.";
+            return View();
+        }
+
+        // 2. Suriin kung Rejected ang account
+        if (user.Status == "Rejected")
+        {
+            ViewBag.ErrorMessage = "Your account has been rejected by the admin.";
+            return View();
+        }
         
+        // 3. Kung Active na (o walang status na nakalagay), ituloy ang pagpasok ayon sa role
         string userRole = user.Role?.ToLower() ?? "operator";
 
         return userRole switch
         {
-            "operator"    => RedirectToAction("OperatorDashboard", "Tour"),
-            "admin"       => RedirectToAction("OperatorDashboard", "Tour"),
-            _             => RedirectToAction("Login")
+            "admin"      => RedirectToAction("UserManagement", "User"),
+            "operator"   => RedirectToAction("OperatorDashboard", "Tour"),
+            _            => RedirectToAction("Login")
         };
     }
 
@@ -99,19 +114,17 @@ public class HomeController : Controller
             Sex = sex.ToLower().Trim(),
             Age = age,
             Password = password,
-            Role = role.ToLower().Trim()
+            Role = role.ToLower().Trim(),
+            Status = "Pending" // Naka-set sa Pending para hintayin muna ang approval ng admin
         };
 
         _context.Users.Add(newUser);
         await _context.SaveChangesAsync();
 
-        // Streamlined to route both valid roles strictly to the TourController dashboard
-        return newUser.Role switch
-        {
-            "operator"    => RedirectToAction("OperatorDashboard", "Tour"),
-            "admin"       => RedirectToAction("OperatorDashboard", "Tour"),
-            _             => RedirectToAction("Login")
-        };
+        // I-pasa ang mensahe sa TempData patungo sa Login page pagkatapos mag-register
+        TempData["SuccessMessage"] = "Wait for admin approval. Try logging in later.";
+
+        return RedirectToAction("Login", "Home");
     }
 
     public IActionResult Privacy()

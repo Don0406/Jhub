@@ -49,13 +49,12 @@
 <body>
     <div class="dashboard-layout">
         <aside class="sidebar">
-            <div style="margin-bottom: 32px; font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">Operator</span></div>
+            <div style="margin-bottom: 32px; font-size: 20px; font-weight: 800;">J-Hub <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);"> Admin</span></div>
             <nav style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
                 <a href="/Home/OperatorDashboard" class="body-text" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
                 <a href="/Tour/Management" class="body-text" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">Tour Management</a>
                 <a href="/User/BookingQueue" class="body-text" style="color: var(--text-muted); text-decoration: none;">Booking Queue</a>
                 <a href="/Tour/VendorManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">Vendors</a>
-                <a href="/User/UserManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">User Management (RBAC)</a>
                 <a href="/Home/Logout" onclick="sessionStorage.clear(); localStorage.clear();" class="body-text" style="color: var(--status-nogo); text-decoration: none; margin-top: auto;">Log Out</a>
             </nav>
         </aside>
@@ -129,7 +128,6 @@
                                             '₱@t.BasePrice.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
                                             '₱@operationalCost.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)', 
                                             '@t.SlotsFilled / @t.TotalCapacity', 
-                                            '@t.MinParticipants', 
                                             '@t.Deadline.ToString("MMMM dd, yyyy")', 
                                             '@JavaScriptEncoder.Default.Encode(t.Status)', 
                                             '@JavaScriptEncoder.Default.Encode(t.ItineraryHighlights ?? "No highlights specified.")', 
@@ -184,11 +182,8 @@
                 </div>
                 <div class="details-group"><div class="label-text">DEPARTURE TIMELINE</div><div id="view-dep" class="details-val"></div></div>
                 <div class="details-group"><div class="label-text">RETURN TIMELINE</div><div id="view-ret" class="details-val"></div></div>
-                <div class="details-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin: 0;">
-                    <div class="details-group"><div class="label-text">SLOTS (FILLED/CAPACITY)</div><div id="view-slots" class="details-val"></div></div>
-                    <div class="details-group"><div class="label-text">MIN PARTICIPANTS</div><div id="view-min" class="details-val"></div></div>
-                </div>
-                <div class="details-group"><div class="label-text">REGISTRATION DEADLINE</div><div id="view-deadline" class="details-val"></div></div>
+                <div class="details-group" style="grid-column: 1 / -1;"><div class="label-text">SLOTS (FILLED/CAPACITY)</div><div id="view-slots" class="details-val"></div></div>
+                <div class="details-group" style="grid-column: 1 / -1;"><div class="label-text">REGISTRATION DEADLINE</div><div id="view-deadline" class="details-val"></div></div>
             </div>
             
             <div class="details-group" style="margin-bottom: 16px;">
@@ -269,7 +264,7 @@
     </div>
 
     <script>
-        function openDetailsModal(name, dest, dep, ret, price, cost, slots, minPart, deadline, status, itin, vendorBase64, bookingBase64) {
+        function openDetailsModal(name, dest, dep, ret, price, cost, slots, deadline, status, itin, vendorBase64, bookingBase64) {
             document.getElementById('view-title').innerText = decodeURIComponent(name);
             document.getElementById('view-dest').innerText = decodeURIComponent(dest);
             document.getElementById('view-dep').innerText = dep;
@@ -277,7 +272,6 @@
             document.getElementById('view-price').innerText = price;
             document.getElementById('view-cost').innerText = cost;
             document.getElementById('view-slots').innerText = slots;
-            document.getElementById('view-min').innerText = minPart;
             document.getElementById('view-deadline').innerText = deadline;
             document.getElementById('view-status').innerText = decodeURIComponent(status);
             document.getElementById('view-itin-highlights').innerText = decodeURIComponent(itin);

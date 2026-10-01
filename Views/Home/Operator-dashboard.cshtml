@@ -66,9 +66,75 @@
         .bg-nogo { background-color: rgba(239, 68, 68, 0.2); color: var(--status-nogo); }
         .bg-full { background-color: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
 
+        /* Techy Booking Velocity Style */
+        .velocity-techy {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+        }
+        .velocity-techy::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 6px #3b82f6;
+        }
+
         .alert-card-low { background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid rgba(234, 179, 8, 0.3); border-left: 4px solid var(--status-watch); margin-bottom: 12px; }
         .alert-card-med { background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid rgba(249, 115, 22, 0.4); border-left: 4px solid #f97316; margin-bottom: 12px; }
         .alert-card-high { background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.4); border-left: 4px solid var(--status-nogo); margin-bottom: 12px; }
+        
+        /* Individual Tour Velocity Graph Component */
+        .velocity-graph-container {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .graph-row {
+            background-color: var(--bg-primary);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .graph-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .graph-track {
+            background-color: #020617;
+            height: 10px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .graph-bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+        .bar-high { background-color: var(--status-go); box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+        .bar-med { background-color: #f97316; box-shadow: 0 0 8px rgba(249, 115, 22, 0.4); }
+        .bar-low { background-color: var(--status-watch); box-shadow: 0 0 8px rgba(234, 179, 8, 0.4); }
     </style>
 </head>
 <body>
@@ -83,7 +149,6 @@
                 <a href="/Tour/Management" class="body-text" style="color: var(--text-muted); text-decoration: none;">Tour Management</a>
                 <a href="/User/BookingQueue" class="body-text" style="color: var(--text-muted); text-decoration: none;">Booking Queue</a>
                 <a href="/Tour/VendorManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">Vendors</a>
-                <a href="/User/UserManagement" class="body-text" style="color: var(--text-muted); text-decoration: none;">User Management (RBAC)</a>
                 <a href="/Home/Logout" class="body-text" style="color: var(--status-nogo); text-decoration: none; font-weight: 500; margin-top: auto;">Log Out</a>
             </nav>
         </aside>
@@ -100,6 +165,7 @@
                     <tr>
                         <th class="label-text">TOUR NAME / DESTINATION</th>
                         <th class="label-text">SLOTS FILLED</th>
+                        <th class="label-text">Predicted Booking Velocity</th>
                         <th class="label-text">SYSTEM STATUS</th>
                         <th class="label-text">ACTIONS</th>
                     </tr>
@@ -113,6 +179,7 @@
                             <tr>
                                 <td class="heading-md">@t.TourName</td>
                                 <td class="body-text">@t.SlotsFilled / @t.TotalCapacity</td>
+                                <td><span id="velocity-@t.Id" class="velocity-techy">Loading...</span></td>
                                 <td><span class="badge @css">@status</span></td>
                                 <td><a href="/Tour/Management" class="btn btn-secondary">View</a></td>
                             </tr>
@@ -120,6 +187,33 @@
                     }
                 </tbody>
             </table>
+
+            <!-- INDIVIDUAL TOUR BOOKING VELOCITY BARS -->
+            <div style="margin-top: 32px;">
+                <h3 class="heading-md" style="margin-bottom: 16px;"> Tour Fill Rate & Velocity Performance</h3>
+                <div class="velocity-graph-container" id="velocity-container">
+                    @if (activeTours != null && activeTours.Any())
+                    {
+                        @foreach (var t in activeTours)
+                        {
+                            <div class="graph-row" id="graph-row-@t.Id">
+                                <div class="graph-meta">
+                                    <span style="font-weight: 700; color: var(--text-primary);">@t.TourName</span>
+                                    <span id="graph-label-@t.Id" style="color: var(--text-muted); font-family: monospace;">Calculating fill rate...</span>
+                                </div>
+                                <div class="graph-track">
+                                    <div id="graph-bar-@t.Id" class="graph-bar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="body-text" style="color: var(--text-muted); text-align: center; padding: 12px;">No active tours available for graph analysis.</p>
+                    }
+                </div>
+            </div>
+
         </main>
 
         <!-- RIGHT SIDEBAR: ANALYTICS & PREDICTIVE INSIGHTS -->
@@ -128,7 +222,6 @@
                 <h3 class="heading-md" style="margin-bottom: 16px;">Financial Analytics</h3>
                 <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <p class="label-text">TOTAL OPERATIONAL COSTS</p>
-                    <!-- Pinalitan ang ID para maiwasan ang luma/cached elements sa browser -->
                     <p id="operational-cost-display" style="font-size: 24px; font-weight: 700; color: var(--status-go); margin: 4px 0 0 0;">Loading...</p>
                 </div>
             </div>
@@ -195,12 +288,63 @@
         fetch('/Tour/CalculateNetPayables')
             .then(response => response.json())
             .then(data => {
-                // Babasahin na nito ang tamang sum galing sa database (e.g. 4000)
                 document.getElementById('operational-cost-display').innerText = '₱ ' + data.totalOperationalCosts.toLocaleString('en-PH', {minimumFractionDigits: 2});
             })
             .catch(err => {
                 document.getElementById('operational-cost-display').innerText = 'Error';
             });
+
+        // Dynamic Loading para sa bawat active tour instance
+        @if (activeTours != null)
+        {
+            @foreach (var t in activeTours)
+            {
+                <text>
+                fetch('/Analytics/BookingVelocity/@t.Id')
+                    .then(res => res.json())
+                    .then(data => {
+                        let velocity = data.averageSlotsPerDay || 0;
+                        let capacity = @t.TotalCapacity > 0 ? @t.TotalCapacity : 1;
+                        let displayVal = velocity > 0 ? velocity + ' slots/day' : '0 slots/day';
+                        
+                        document.getElementById('velocity-@t.Id').innerText = velocity > 0 ? displayVal : 'N/A';
+
+                        // Fill rate calculation based on booking velocity vs total capacity
+                        let fillRate = (velocity / capacity) * 100;
+                        let barWidth = Math.min(Math.max(fillRate, 0), 100); // Limit between 0% and 100%
+
+                        // I-update ang bawat specific tour bar at label
+                        let barElem = document.getElementById('graph-bar-@t.Id');
+                        let labelElem = document.getElementById('graph-label-@t.Id');
+
+                        if (barElem && labelElem) {
+                            barElem.style.width = barWidth + '%';
+                            labelElem.innerText = `${velocity} slots/day (${fillRate.toFixed(1)}% fill rate)`;
+
+                            // Lagyan ng color coding base sa bilis ng fill rate performance
+                            if (fillRate >= 30) {
+                                barElem.className = 'graph-bar bar-high';
+                                labelElem.style.color = 'var(--status-go)';
+                            } else if (fillRate >= 10) {
+                                barElem.className = 'graph-bar bar-med';
+                                labelElem.style.color = '#f97316';
+                            } else {
+                                barElem.className = 'graph-bar bar-low';
+                                labelElem.style.color = 'var(--status-watch)';
+                            }
+                        }
+                    })
+                    .catch(e => {
+                        document.getElementById('velocity-@t.Id').innerText = 'N/A';
+                        let labelElem = document.getElementById('graph-label-@t.Id');
+                        if (labelElem) {
+                            labelElem.innerText = 'Error loading velocity';
+                            labelElem.style.color = 'var(--status-nogo)';
+                        }
+                    });
+                </text>
+            }
+        }
     </script>
 </body>
 </html>

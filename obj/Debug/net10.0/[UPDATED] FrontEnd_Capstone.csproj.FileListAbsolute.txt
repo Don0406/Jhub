@@ -247,3 +247,5 @@ C:\[UPDATED] FrontEnd_Capstone\bin\Debug\net10.0\Microsoft.Extensions.AI.Abstrac
 C:\[UPDATED] FrontEnd_Capstone\bin\Debug\net10.0\System.Management.dll
 C:\[UPDATED] FrontEnd_Capstone\bin\Debug\net10.0\runtimes\win\lib\net7.0\System.Management.dll
 C:\[UPDATED] FrontEnd_Capstone\obj\Debug\net10.0\[UPDATED] FrontEnd_Capstone.sourcelink.json
+C:\[UPDATED] FrontEnd_Capstone\bin\Debug\net10.0\MailKit.dll
+C:\[UPDATED] FrontEnd_Capstone\bin\Debug\net10.0\MimeKit.dll

@@ -36,4 +36,7 @@ public class User
     public string Role { get; set; } = "joiner"; 
 
     public string Status { get; set; } = "Active";
+
+    public bool IsApproved { get; set; } = false; // False muna kapag nag-register
+    public bool IsRejected { get; set; } = false;
 }

@@ -13,7 +13,7 @@ public class Tour
 
     [Required]
     public string Destination { get; set; } = string.Empty;
-
+    
     [Required]
     public DateTime DepartureDate { get; set; }
 
@@ -32,6 +32,8 @@ public class Tour
     public int TotalCapacity { get; set; }
 
     public int SlotsFilled { get; set; } = 0;
+
+    public DateTime? SlotsFilledAt { get; set; }
 
     [Required]
     public int MinParticipants { get; set; }
@@ -61,7 +63,7 @@ public class Tour
     
     public bool IsBoosted { get; set; } = false;
     public DateTime? BoostedAt { get; set; }
-
+   
     public bool IsCancelled { get; set; } = false;
     
     public DateTime? CancelledAt { get; set; }

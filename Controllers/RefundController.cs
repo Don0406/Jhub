@@ -44,7 +44,7 @@ public async Task<IActionResult> RequestRefundFromQueue(int bookingId, string re
 {
     var booking = await _context.Set<Booking>().Include(b => b.Tour).FirstOrDefaultAsync(x => x.Id == bookingId);
     if (booking == null) return Json(new { success = false, message = "Booking not found." });
-
+    booking.IsArchived = true;
     // Kung galing sa Pending at nirefund/tinanggal, gawing "Rejected"
     if (booking.Status == "Pending Validation")
     {
@@ -91,11 +91,13 @@ public async Task<IActionResult> DeleteApprovedBooking(int id)
         // Ensure status reflects as Validated in history
         booking.Status = "Validated"; 
         booking.RefundUpdatedAt = DateTime.Now;
+        booking.IsArchived = true;
 
         await _context.SaveChangesAsync();
 
         return Json(new { success = true, message = "Approved booking has been moved to history." });
     }
+
     catch (Exception ex)
     {
         return Json(new { success = false, message = "Error: " + ex.Message });
@@ -126,6 +128,7 @@ public async Task<IActionResult> CompleteTourBooking(int id)
         // Ilipat sa "Validated" para mawala sa Approved section pero manatili sa DB at lumabas sa Booking History
         booking.Status = "Validated";
         booking.RefundUpdatedAt = DateTime.Now;
+        booking.IsArchived = true;
 
         await _context.SaveChangesAsync();
 
@@ -142,7 +145,10 @@ public async Task<IActionResult> CompleteTourBooking(int id)
 [Route("Refund/SubmitRefundRequest")]
 public async Task<IActionResult> SubmitRefundRequest(int bookingId, string refundReason, string payoutChannel, string? notes)
 {
-    var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
+    var booking = await _context.Bookings
+        .Include(b => b.Tour) // Siguraduhing kasama ito para hindi mag-null ang Tour properties sa HTML mo
+        .FirstOrDefaultAsync(b => b.Id == bookingId);
+
     if (booking == null)
     {
         return NotFound();
@@ -158,7 +164,13 @@ public async Task<IActionResult> SubmitRefundRequest(int bookingId, string refun
 
     TempData["Message"] = "Matagumpay na naisumite ang iyong bagong mensahe o kahilingan sa refund.";
     
-    return RedirectToAction("ViewStatus", "Booking", new { id = bookingId });
+    // Kunin din ang slotsFilled para hindi mag-error ang math sa HTML mo (kung ginagamit ito sa ViewBag)
+    // Palitan mo na lang ng query kung paano mo kinukuha ang slotsFilled sa ibang part ng code mo.
+    int slotsFilled = await _context.Bookings.CountAsync(b => b.TourId == booking.TourId && (b.Status == "Validated" || b.Status == "Confirmed"));
+    ViewBag.DynamicSlotsFilled = slotsFilled;
+
+    // Direktang i-render ang iyong Booking-status.cshtml nang walang redirection!
+    return View("~/Views/Booking/Booking-status.cshtml", booking);
 }
  
         [HttpPost]
@@ -174,6 +186,7 @@ public async Task<IActionResult> SubmitRefundRequest(int bookingId, string refun
             booking.RefundStatus = refundStatus;
             booking.RefundOperatorMessage = operatorMessage;
             booking.RefundUpdatedAt = DateTime.Now;
+            booking.IsArchived = true;
 
             if (refundProofFile != null && refundProofFile.Length > 0)
             {

@@ -78,24 +78,17 @@ public async Task<IActionResult> BookingHistory()
     }
 
 [HttpPost]
-[Route("User/ApproveBooking")]
 public async Task<IActionResult> ApproveBooking(int id)
 {
-    var b = await _context.Set<Booking>().Include(b => b.Tour).FirstOrDefaultAsync(x => x.Id == id);
-    if (b == null || b.Tour == null) 
-        return Json(new { success = false, message = "Record not found" });
-
-    if (b.Status == "Validated" || b.Status == "Approved") 
-        return Json(new { success = false, message = "Booking is already approved or validated." });
-
-    if ((b.Tour.SlotsFilled + b.Slots) > b.Tour.TotalCapacity)
+    var booking = await _context.Bookings.FindAsync(id);
+    if (booking == null) 
     {
-        return Json(new { success = false, message = "Not enough slots available in this tour." });
+        return Json(new { success = false, message = "Booking not found." });
     }
 
-    b.Status = "Validated";
-    b.IsApproved = true;
-    b.Tour.SlotsFilled += b.Slots;
+    booking.Status = "Validated";
+    booking.IsApproved = true;
+    booking.IsArchived = false;
 
     await _context.SaveChangesAsync();
     return Json(new { success = true });
@@ -103,20 +96,18 @@ public async Task<IActionResult> ApproveBooking(int id)
  
 
 [HttpPost]
-[Route("User/RejectBooking")]
 public async Task<IActionResult> RejectBooking(int id)
 {
-    var b = await _context.Set<Booking>().Include(b => b.Tour).FirstOrDefaultAsync(x => x.Id == id);
-    if (b == null) return Json(new { success = false });
-
-    if (b.Status == "Validated" && b.Tour != null)
+    var booking = await _context.Bookings.FindAsync(id);
+    if (booking == null) 
     {
-        b.Tour.SlotsFilled -= b.Slots;
+        return Json(new { success = false, message = "Booking not found." });
     }
 
-    b.Status = "Rejected";
-    b.IsApproved = false;
-    
+    booking.Status = "Rejected";
+    booking.IsApproved = false;
+    booking.IsArchived = true;
+
     await _context.SaveChangesAsync();
     return Json(new { success = true });
 }
